@@ -48,6 +48,7 @@ const config: Config = {
       animation: {
         'pulse-glow': 'pulseGlow 3s infinite ease-in-out',
         float: 'float 6s infinite ease-in-out',
+        slideLeft: 'slideLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
       keyframes: {
         pulseGlow: {
@@ -57,6 +58,10 @@ const config: Config = {
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-8px)' },
+        },
+        slideLeft: {
+          from: { transform: 'translateX(100%)', opacity: '0' },
+          to: { transform: 'translateX(0)', opacity: '1' },
         },
       },
     },

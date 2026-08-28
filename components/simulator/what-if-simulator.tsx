@@ -1,231 +1,266 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { WhatIfSimulationInput, SimulationResult } from '@/types/analysis';
-import { DEFAULT_BUILDING_PROFILE } from '@/lib/models/building-thermal-model';
-import { runWhatIfSimulation } from '@/lib/calculations/roi-calculator';
+import React, { useState, useEffect } from 'react';
+import { RetrofitOptionId, MultiRetrofitSimulationResult } from '@/lib/retrofit/types';
 import { GlassCard } from '@/components/ui/glass-card';
 import { MetricCard } from '@/components/ui/metric-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ThermalCharts } from '@/components/analytics/thermal-charts';
-import { Sliders, RefreshCw, Zap, DollarSign, Calendar, Flame, ShieldCheck, Thermometer } from 'lucide-react';
-import { formatCurrency, formatEnergy, formatPercent } from '@/lib/utils/formatters';
+import { AssumptionsPanel } from '@/components/retrofit/assumptions-panel';
+import { Sliders, RefreshCw, Zap, DollarSign, Calendar, ShieldCheck, SunMedium, Layers, Cpu, Sprout, ArrowRight, Activity, CheckSquare, Square } from 'lucide-react';
+import { formatCurrency, formatEnergy } from '@/lib/utils/formatters';
+
+interface RetrofitChoice {
+  id: RetrofitOptionId;
+  name: string;
+  category: string;
+  icon: React.ReactNode;
+}
+
+const RETROFIT_CHOICES: RetrofitChoice[] = [
+  { id: 'EXTERNAL_SHADING', name: 'External Solar Louvers & Shading', category: 'Facade Shading', icon: <SunMedium className="w-4 h-4 text-amber-400" /> },
+  { id: 'ROOF_INSULATION', name: 'Roof Insulation (R-20+)', category: 'Envelope Insulation', icon: <Layers className="w-4 h-4 text-indigo-400" /> },
+  { id: 'COOL_ROOF', name: 'High-Albedo Cool Roof (SRI 108)', category: 'Reflective Surface', icon: <ShieldCheck className="w-4 h-4 text-cyan-400" /> },
+  { id: 'SOLAR_GLAZING', name: 'Solar-Control Glazing Film', category: 'Fenestration', icon: <SunMedium className="w-4 h-4 text-cyan-400" /> },
+  { id: 'HVAC_UPGRADE', name: 'Smart AI HVAC & Chiller VFDs', category: 'Mechanical Systems', icon: <Cpu className="w-4 h-4 text-emerald-400" /> },
+  { id: 'VEGETATION', name: 'Biosolar Green Roof Canopy', category: 'Green Infrastructure', icon: <Sprout className="w-4 h-4 text-emerald-400" /> },
+];
 
 export const WhatIfSimulator: React.FC = () => {
-  const [params, setParams] = useState<WhatIfSimulationInput>({
-    buildingId: DEFAULT_BUILDING_PROFILE.id,
-    roofReflectance: 0.85,
-    windowFilmSHGC: 0.28,
-    wallInsulationAddRValue: 12,
-    greenRoofCoveragePct: 0,
-    smartHvacOptimization: true,
-    thermostatSetpointC: 23.5,
-  });
+  const [selectedIds, setSelectedIds] = useState<RetrofitOptionId[]>(['COOL_ROOF', 'SOLAR_GLAZING', 'HVAC_UPGRADE']);
+  const [simulation, setSimulation] = useState<MultiRetrofitSimulationResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [userRate, setUserRate] = useState<number>(0.14);
 
-  const simulation: SimulationResult = useMemo(() => {
-    return runWhatIfSimulation(DEFAULT_BUILDING_PROFILE, params);
-  }, [params]);
+  const runSimulation = async (ids: RetrofitOptionId[]) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/retrofits/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          selectedRetrofitIds: ids,
+          userElectricityRateUSD: userRate,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSimulation(data.simulation);
+      }
+    } catch (err) {
+      console.error('Failed to run simulation:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleReset = () => {
-    setParams({
-      buildingId: DEFAULT_BUILDING_PROFILE.id,
-      roofReflectance: 0.85,
-      windowFilmSHGC: 0.28,
-      wallInsulationAddRValue: 12,
-      greenRoofCoveragePct: 0,
-      smartHvacOptimization: true,
-      thermostatSetpointC: 23.5,
-    });
+  useEffect(() => {
+    runSimulation(selectedIds);
+  }, []);
+
+  const toggleRetrofit = (id: RetrofitOptionId) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSimulateClick = () => {
+    runSimulation(selectedIds);
   };
 
   return (
     <div className="space-y-8">
-      {/* Control Sliders & Interactive Parameters */}
-      <GlassCard variant="glow" className="p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+      {/* Control Panel */}
+      <GlassCard variant="glow" className="p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Sliders className="w-5 h-5 text-cyan-400" />
-              <h3 className="text-xl font-bold text-white tracking-wide">What-If Retrofit Parameter Engine</h3>
+              <h3 className="text-xl font-bold text-white tracking-wide">Multi-Retrofit What-If Scenario Engine</h3>
             </div>
             <p className="text-xs text-slate-400 font-mono">
-              Adjust envelope albedo, window film solar heat gain coefficient, wall insulation R-value & setpoint
+              Select combinations of building retrofits to simulate compound thermal stress reduction & portfolio ROI.
             </p>
           </div>
-          <Button variant="outline" size="sm" icon={<RefreshCw className="w-3.5 h-3.5" />} onClick={handleReset}>
-            Reset Defaults
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-mono text-xs">
-          {/* Roof Reflectance (SRI) */}
-          <div className="space-y-2 p-4 rounded-xl bg-dark-950/80 border border-slate-800">
-            <div className="flex justify-between font-bold">
-              <span className="text-slate-300">Roof Albedo Reflectance</span>
-              <span className="text-cyan-400">{(params.roofReflectance * 100).toFixed(0)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0.10"
-              max="0.95"
-              step="0.05"
-              value={params.roofReflectance}
-              onChange={(e) => setParams({ ...params, roofReflectance: parseFloat(e.target.value) })}
-              className="w-full accent-cyan-400 bg-slate-800 rounded-lg cursor-pointer"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500">
-              <span>Dark Asphalt (10%)</span>
-              <span>Cool Coating (95%)</span>
-            </div>
-          </div>
-
-          {/* Window Film SHGC */}
-          <div className="space-y-2 p-4 rounded-xl bg-dark-950/80 border border-slate-800">
-            <div className="flex justify-between font-bold">
-              <span className="text-slate-300">Window Film SHGC</span>
-              <span className="text-amber-400">{params.windowFilmSHGC.toFixed(2)}</span>
-            </div>
-            <input
-              type="range"
-              min="0.15"
-              max="0.85"
-              step="0.05"
-              value={params.windowFilmSHGC}
-              onChange={(e) => setParams({ ...params, windowFilmSHGC: parseFloat(e.target.value) })}
-              className="w-full accent-amber-400 bg-slate-800 rounded-lg cursor-pointer"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500">
-              <span>High Performance (0.15)</span>
-              <span>Clear Glass (0.85)</span>
-            </div>
-          </div>
-
-          {/* Wall Insulation R-Value */}
-          <div className="space-y-2 p-4 rounded-xl bg-dark-950/80 border border-slate-800">
-            <div className="flex justify-between font-bold">
-              <span className="text-slate-300">Wall Insulation R-Value</span>
-              <span className="text-indigo-400">+{params.wallInsulationAddRValue} R</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="30"
-              step="2"
-              value={params.wallInsulationAddRValue}
-              onChange={(e) => setParams({ ...params, wallInsulationAddRValue: parseInt(e.target.value) })}
-              className="w-full accent-indigo-400 bg-slate-800 rounded-lg cursor-pointer"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500">
-              <span>Uninsulated (0)</span>
-              <span>High EIFS (+30)</span>
-            </div>
-          </div>
-
-          {/* Thermostat Setpoint */}
-          <div className="space-y-2 p-4 rounded-xl bg-dark-950/80 border border-slate-800">
-            <div className="flex justify-between font-bold">
-              <span className="text-slate-300">Thermostat Setpoint</span>
-              <span className="text-rose-400">{params.thermostatSetpointC}°C</span>
-            </div>
-            <input
-              type="range"
-              min="21.0"
-              max="26.0"
-              step="0.5"
-              value={params.thermostatSetpointC}
-              onChange={(e) => setParams({ ...params, thermostatSetpointC: parseFloat(e.target.value) })}
-              className="w-full accent-rose-400 bg-slate-800 rounded-lg cursor-pointer"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500">
-              <span>21.0°C (Overcooled)</span>
-              <span>26.0°C (Eco)</span>
-            </div>
-          </div>
-
-          {/* Green Roof Coverage */}
-          <div className="space-y-2 p-4 rounded-xl bg-dark-950/80 border border-slate-800">
-            <div className="flex justify-between font-bold">
-              <span className="text-slate-300">Green Roof Coverage</span>
-              <span className="text-emerald-400">{params.greenRoofCoveragePct}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="10"
-              value={params.greenRoofCoveragePct}
-              onChange={(e) => setParams({ ...params, greenRoofCoveragePct: parseInt(e.target.value) })}
-              className="w-full accent-emerald-400 bg-slate-800 rounded-lg cursor-pointer"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500">
-              <span>0%</span>
-              <span>100% Vegetation</span>
-            </div>
-          </div>
-
-          {/* Smart HVAC Control Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-dark-950/80 border border-slate-800">
-            <div>
-              <div className="font-bold text-slate-300">Smart AI HVAC Optimization</div>
-              <div className="text-[10px] text-slate-500">FortyGuard dynamic setpoint automation</div>
-            </div>
-            <button
-              onClick={() => setParams({ ...params, smartHvacOptimization: !params.smartHvacOptimization })}
-              className={`w-12 h-6 rounded-full transition-colors p-1 ${
-                params.smartHvacOptimization ? 'bg-cyan-500' : 'bg-slate-700'
-              }`}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<RefreshCw className="w-3.5 h-3.5" />}
+              onClick={() => {
+                const defaults: RetrofitOptionId[] = ['COOL_ROOF', 'SOLAR_GLAZING'];
+                setSelectedIds(defaults);
+                runSimulation(defaults);
+              }}
             >
-              <div
-                className={`w-4 h-4 rounded-full bg-slate-950 transition-transform ${
-                  params.smartHvacOptimization ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
+              Reset Defaults
+            </Button>
+            <Button
+              variant="glow"
+              size="md"
+              disabled={loading}
+              onClick={handleSimulateClick}
+              icon={<ArrowRight className="w-4 h-4" />}
+            >
+              {loading ? 'Simulating...' : 'Simulate Scenario →'}
+            </Button>
           </div>
         </div>
+
+        {/* Checkboxes Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-xs">
+          {RETROFIT_CHOICES.map((choice) => {
+            const isChecked = selectedIds.includes(choice.id);
+            return (
+              <div
+                key={choice.id}
+                onClick={() => toggleRetrofit(choice.id)}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                  isChecked
+                    ? 'bg-cyan-950/40 border-cyan-500/50 shadow-glow text-white'
+                    : 'bg-dark-950/80 border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-dark-900 border border-slate-800">{choice.icon}</div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-semibold">{choice.category}</span>
+                    <span className="font-bold text-white font-sans">{choice.name}</span>
+                  </div>
+                </div>
+                <div className="shrink-0">
+                  {isChecked ? (
+                    <CheckSquare className="w-5 h-5 text-cyan-400" />
+                  ) : (
+                    <Square className="w-5 h-5 text-slate-600" />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Assumptions Panel */}
+        <AssumptionsPanel customElectricityRate={userRate} />
       </GlassCard>
 
-      {/* Real-Time Computed KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Cooling Energy Saved"
-          value={`-${simulation.energySavedPct}%`}
-          subtext={formatEnergy(simulation.energySavedkWh)}
-          change="Annual Cut"
-          isPositive={true}
-          icon={<Zap className="w-5 h-5" />}
-          accentColor="emerald"
-        />
-        <MetricCard
-          title="Annual Bill Savings"
-          value={formatCurrency(simulation.annualCostSavingsUSD)}
-          subtext="$0.14 / kWh electricity rate"
-          change="Utility Avoidance"
-          isPositive={true}
-          icon={<DollarSign className="w-5 h-5" />}
-          accentColor="amber"
-        />
-        <MetricCard
-          title="CapEx Investment"
-          value={formatCurrency(simulation.capitalExpenditureUSD)}
-          subtext="Turnkey installation"
-          icon={<ShieldCheck className="w-5 h-5" />}
-          accentColor="cyan"
-        />
-        <MetricCard
-          title="Payback Period"
-          value={`${simulation.paybackPeriodYears} Yrs`}
-          subtext={`20-Yr NPV: ${formatCurrency(simulation.twentyYearNPVUSD)}`}
-          change="Break-Even"
-          isPositive={true}
-          icon={<Calendar className="w-5 h-5" />}
-          accentColor="violet"
-        />
-      </div>
+      {/* CURRENT vs SIMULATED Comparison Section */}
+      {simulation && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* CURRENT Baseline Card */}
+            <GlassCard variant="glow" className="p-5 space-y-4 border-rose-500/20">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider">CURRENT BASELINE</span>
+                <Badge variant="rose">UNMODIFIED</Badge>
+              </div>
 
-      {/* Chart Output */}
-      <ThermalCharts monthlyData={simulation.monthlyBreakdown} />
+              <div className="space-y-3 font-mono">
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Thermal Stress Score</span>
+                  <span className="text-2xl font-extrabold text-rose-400">
+                    {simulation.baseline.thermalStressScore}/100 ({simulation.baseline.stressCategory})
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Cooling Heat Stress Load</span>
+                  <span className="text-lg font-bold text-white">{simulation.baseline.coolingStressKW} kW</span>
+                </div>
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Energy Impact Rating</span>
+                  <Badge variant="rose" className="mt-1">{simulation.baseline.energyImpactLevel}</Badge>
+                </div>
+              </div>
+            </GlassCard>
+
+            {/* SIMULATED Scenario Card */}
+            <GlassCard variant="glow" className="p-5 space-y-4 border-emerald-500/30">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">SIMULATED SCENARIO</span>
+                <Badge variant="emerald">PACKAGE SIMULATION</Badge>
+              </div>
+
+              <div className="space-y-3 font-mono">
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Simulated Thermal Stress</span>
+                  <span className="text-2xl font-extrabold text-emerald-400">
+                    {simulation.simulated.thermalStressScore}/100 ({simulation.simulated.stressCategory})
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Simulated Cooling Stress</span>
+                  <span className="text-lg font-bold text-white">{simulation.simulated.coolingStressKW} kW</span>
+                </div>
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Simulated Energy Rating</span>
+                  <Badge variant="emerald" className="mt-1">{simulation.simulated.energyImpactLevel}</Badge>
+                </div>
+              </div>
+            </GlassCard>
+
+            {/* DELTAS & REDUCTION Summary Card */}
+            <GlassCard variant="glow" className="p-5 space-y-4 border-cyan-500/30">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider">IMPACT DELTA</span>
+                <Badge variant="cyan">COMPOUND CUT</Badge>
+              </div>
+
+              <div className="space-y-3 font-mono">
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Modeled Cooling Cut</span>
+                  <span className="text-2xl font-extrabold text-cyan-300">-{simulation.deltas.combinedEnergyReductionPct}%</span>
+                </div>
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Cooling Heat Reduction</span>
+                  <span className="text-lg font-bold text-emerald-400">-{simulation.deltas.coolingStressDropKW} kW</span>
+                </div>
+                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
+                  <span className="text-slate-400 text-xs block">Indoor Temp Drop</span>
+                  <span className="text-lg font-bold text-rose-400">-{simulation.deltas.indoorTempDropC}°C</span>
+                </div>
+              </div>
+            </GlassCard>
+          </div>
+
+          {/* Financial Return Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+            <MetricCard
+              title="Estimated Investment"
+              value={simulation.financials.estimatedInvestmentUSD.formatted}
+              subtext="Illustrative CapEx range"
+              icon={<ShieldCheck className="w-5 h-5" />}
+              accentColor="cyan"
+            />
+            <MetricCard
+              title="Estimated Annual Savings"
+              value={simulation.financials.estimatedAnnualSavingsUSD.formatted}
+              subtext={`$${simulation.assumptionsUsed.electricityRateUSD}/kWh rate`}
+              change="Utility Cut"
+              isPositive={true}
+              icon={<DollarSign className="w-5 h-5" />}
+              accentColor="amber"
+            />
+            <MetricCard
+              title="Estimated Payback"
+              value={simulation.financials.estimatedPaybackYears.formatted}
+              subtext="Simple break-even"
+              change="Payback"
+              isPositive={true}
+              icon={<Calendar className="w-5 h-5" />}
+              accentColor="emerald"
+            />
+            <MetricCard
+              title="20-Year NPV"
+              value={simulation.financials.twentyYearNPVUSD.formatted}
+              subtext={`10-Yr Total: ${simulation.financials.tenYearSavingsUSD.formatted}`}
+              change="Net Value"
+              isPositive={true}
+              icon={<Zap className="w-5 h-5" />}
+              accentColor="violet"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

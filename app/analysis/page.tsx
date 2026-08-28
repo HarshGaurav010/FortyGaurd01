@@ -11,6 +11,10 @@ import { RetrofitCard } from '@/components/retrofit/retrofit-card';
 import { Search, Flame, ShieldCheck, Zap, DollarSign, Leaf, MapPin, AlertCircle, RefreshCw } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatters';
 
+import { RetrofitRecommendationSection } from '@/components/retrofit/retrofit-recommendation';
+import { RetrofitRoadmapSection } from '@/components/retrofit/retrofit-roadmap';
+import { retrofitRecommendationEngine } from '@/lib/retrofit/recommendation';
+
 export default function AnalysisPage() {
   const [addressInput, setAddressInput] = useState('Financial District, San Francisco, CA');
   const [latInput, setLatInput] = useState<number>(37.7749);
@@ -90,6 +94,12 @@ export default function AnalysisPage() {
   useEffect(() => {
     runAnalysis();
   }, []);
+
+  const recommendations = analysisData
+    ? retrofitRecommendationEngine.generateRecommendations(analysisData.building, analysisData.thermalReport, analysisData.heatMap)
+    : [];
+
+  const roadmap = analysisData ? retrofitRecommendationEngine.generateRoadmap(recommendations, analysisData.building) : null;
 
   return (
     <div className="pt-28 pb-20 bg-dark-950 min-h-screen">
@@ -257,18 +267,11 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-slate-800">
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-bold text-white tracking-tight">Recommended Interventions</h3>
-                <Badge variant="cyan">Ranked by Payback</Badge>
-              </div>
+            {/* AI Retrofit Recommendation Section */}
+            <RetrofitRecommendationSection recommendations={recommendations} />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {analysisData.recommendedRetrofits.slice(0, 3).map((item) => (
-                  <RetrofitCard key={item.id} intervention={item} />
-                ))}
-              </div>
-            </div>
+            {/* AI Retrofit Roadmap Section */}
+            {roadmap && <RetrofitRoadmapSection roadmap={roadmap} />}
           </div>
         )}
       </div>

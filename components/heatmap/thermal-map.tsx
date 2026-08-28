@@ -29,6 +29,11 @@ export const ThermalMap: React.FC<ThermalMapProps> = ({ heatMapData }) => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {heatMapData.regionId.includes('DEMO') && (
+            <Badge variant="violet" className="text-[10px] uppercase font-mono">
+              DEMO DATA (MOCK MODE)
+            </Badge>
+          )}
           <Badge variant="amber">AVG LST: {formatTemperature(heatMapData.averageLSTC)}</Badge>
           <Badge variant="rose" pulse>PEAK LST: {formatTemperature(heatMapData.peakLSTC)}</Badge>
         </div>

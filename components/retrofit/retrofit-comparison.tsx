@@ -9,12 +9,21 @@ import { formatCurrency } from '@/lib/utils/formatters';
 
 interface RetrofitComparisonProps {
   interventions: RetrofitIntervention[];
+  combinedPackage?: {
+    packageName: string;
+    totalCostUSD: number;
+    annualSavingsUSD: number;
+    combinedEnergyReductionPct: number;
+    overallPaybackYears: number;
+    overall20YrROIPct: number;
+    totalCarbonOffsetTons20Yr: number;
+  };
 }
 
-export const RetrofitComparison: React.FC<RetrofitComparisonProps> = ({ interventions }) => {
+export const RetrofitComparison: React.FC<RetrofitComparisonProps> = ({ interventions, combinedPackage }) => {
   return (
-    <GlassCard variant="glow" className="p-6 overflow-x-auto">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+    <GlassCard variant="glow" className="p-6 space-y-6 overflow-x-auto">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <h3 className="text-xl font-bold text-white tracking-wide">Retrofit Intervention Comparison Matrix</h3>
           <p className="text-xs text-slate-400 font-mono">
@@ -23,6 +32,35 @@ export const RetrofitComparison: React.FC<RetrofitComparisonProps> = ({ interven
         </div>
         <Badge variant="cyan"><Sparkles className="w-3 h-3" /> AI RANKED</Badge>
       </div>
+
+      {combinedPackage && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/40 via-dark-900 to-indigo-950/40 border border-cyan-500/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+              <Shield className="w-4 h-4 text-cyan-400" /> {combinedPackage.packageName}
+            </span>
+            <Badge variant="emerald">OPTIMAL BUNDLE</Badge>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+            <div className="p-2.5 rounded-lg bg-dark-950/80 border border-slate-800">
+              <span className="text-[10px] text-slate-400 block">Total Investment</span>
+              <span className="text-sm font-bold text-white">{formatCurrency(combinedPackage.totalCostUSD)}</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-dark-950/80 border border-slate-800">
+              <span className="text-[10px] text-slate-400 block">Annual Bill Reduction</span>
+              <span className="text-sm font-bold text-amber-400">{formatCurrency(combinedPackage.annualSavingsUSD)}/yr</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-dark-950/80 border border-slate-800">
+              <span className="text-[10px] text-slate-400 block">Combined Energy Cut</span>
+              <span className="text-sm font-bold text-emerald-400">-{combinedPackage.combinedEnergyReductionPct}%</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-dark-950/80 border border-slate-800">
+              <span className="text-[10px] text-slate-400 block">Portfolio Payback</span>
+              <span className="text-sm font-bold text-cyan-300">{combinedPackage.overallPaybackYears} Yrs (+{combinedPackage.overall20YrROIPct}% 20-Yr ROI)</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <table className="w-full text-left text-xs font-mono border-collapse min-w-[700px]">
         <thead>

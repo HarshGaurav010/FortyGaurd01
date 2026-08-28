@@ -1,13 +1,32 @@
 'use client';
 
-import React from 'react';
-import { CATALOG_RETROFITS } from '@/lib/calculations/thermal-stress-calculator';
-import { RetrofitCard } from '@/components/retrofit/retrofit-card';
+import React, { useMemo } from 'react';
+import { DEFAULT_BUILDING_PROFILE, computeThermalStressReport } from '@/lib/models/building-thermal-model';
+import { retrofitRecommendationEngine } from '@/lib/retrofit/recommendation';
+import { RetrofitRecommendationSection } from '@/components/retrofit/retrofit-recommendation';
+import { RetrofitRoadmapSection } from '@/components/retrofit/retrofit-roadmap';
 import { RetrofitComparison } from '@/components/retrofit/retrofit-comparison';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, Layers, Sparkles } from 'lucide-react';
 
 export default function RetrofitsPage() {
+  const { recommendations, roadmap, baseReport } = useMemo(() => {
+    const report = computeThermalStressReport(DEFAULT_BUILDING_PROFILE, {
+      regionId: 'FG-UAE-DXB-042',
+      regionName: 'Downtown Financial District',
+      center: DEFAULT_BUILDING_PROFILE.coordinates,
+      gridResolutionMeters: 2.0,
+      averageLSTC: 48.4,
+      peakLSTC: 56.8,
+      heatStressScore: 84,
+      thermalHotspots: [],
+      points: [],
+    });
+    const recs = retrofitRecommendationEngine.generateRecommendations(DEFAULT_BUILDING_PROFILE, report);
+    const rm = retrofitRecommendationEngine.generateRoadmap(recs, DEFAULT_BUILDING_PROFILE);
+    return { recommendations: recs, roadmap: rm, baseReport: report };
+  }, []);
+
   return (
     <div className="pt-28 pb-20 bg-dark-950 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
@@ -19,15 +38,11 @@ export default function RetrofitsPage() {
           </p>
         </div>
 
-        {/* Retrofit Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CATALOG_RETROFITS.map((item) => (
-            <RetrofitCard key={item.id} intervention={item} />
-          ))}
-        </div>
+        {/* Retrofit Recommendation Engine */}
+        <RetrofitRecommendationSection recommendations={recommendations} />
 
-        {/* Comparison Matrix */}
-        <RetrofitComparison interventions={CATALOG_RETROFITS} />
+        {/* Phased Roadmap */}
+        {roadmap && <RetrofitRoadmapSection roadmap={roadmap} />}
       </div>
     </div>
   );

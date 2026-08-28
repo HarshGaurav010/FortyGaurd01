@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DEFAULT_BUILDING_PROFILE, computeThermalStressReport } from '@/lib/models/building-thermal-model';
 import { fortyGuardClient } from '@/lib/fortyguard/api-client';
-import { generateRetrofitRecommendations } from '@/lib/calculations/retrofit-engine';
-import { runWhatIfSimulation } from '@/lib/calculations/roi-calculator';
+import { retrofitRecommendationEngine } from '@/lib/retrofit/recommendation';
+import { CENTRAL_RETROFIT_ASSUMPTIONS } from '@/lib/retrofit/assumptions';
 import { AnalysisRequestSchema } from '@/lib/validation/schemas';
 
 export const dynamic = 'force-dynamic';
@@ -24,29 +24,19 @@ export async function POST(req: NextRequest) {
     }
 
     const report = computeThermalStressReport(building, heatMapResult.data);
-    const recommendationMatrix = generateRetrofitRecommendations(building, report, heatMapResult.data);
-    const defaultSimulation = runWhatIfSimulation(building, {
-      buildingId: building.id,
-      roofReflectance: 0.88,
-      windowFilmSHGC: 0.24,
-      wallInsulationAddRValue: 10,
-      greenRoofCoveragePct: 0,
-      smartHvacOptimization: true,
-      thermostatSetpointC: 23.5,
-    });
+    const recommendations = retrofitRecommendationEngine.generateRecommendations(building, report, heatMapResult.data);
+    const roadmap = retrofitRecommendationEngine.generateRoadmap(recommendations, building);
 
     return NextResponse.json({
       success: true,
       building,
-      heatMap: heatMapResult.data,
-      isDemoData: heatMapResult.isDemoData,
       thermalReport: report,
-      recommendedRetrofits: recommendationMatrix.interventions,
-      combinedPackage: recommendationMatrix.combinedPackage,
-      simulationDefault: defaultSimulation,
+      recommendations,
+      roadmap,
+      assumptions: CENTRAL_RETROFIT_ASSUMPTIONS,
     });
   } catch (error) {
-    console.error('Error in Analysis API route:', error);
-    return NextResponse.json({ success: false, error: 'Failed to generate thermal assessment' }, { status: 400 });
+    console.error('Error in /api/retrofits/recommend route:', error);
+    return NextResponse.json({ success: false, error: 'Failed to generate retrofit recommendations' }, { status: 400 });
   }
 }
