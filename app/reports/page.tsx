@@ -26,16 +26,16 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="pt-28 pb-20 bg-dark-950 min-h-screen">
+    <div className="pt-28 pb-20 bg-transparent min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant="violet"><FileText className="w-3 h-3 text-indigo-400" /> EXECUTIVE AUDIT REPORT</Badge>
+              <Badge variant="violet"><FileText className="w-3 h-3 text-indigo-500" /> EXECUTIVE AUDIT REPORT</Badge>
             </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Heat Retrofit Investment & Energy Report</h1>
-            <p className="text-xs text-slate-400 font-mono">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Heat Retrofit Investment & Energy Report</h1>
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-mono">
               Prepared for Nexus Horizon Plaza • FortyGuard Telemetry Certified
             </p>
           </div>
@@ -96,29 +96,31 @@ export default function ReportsPage() {
 
             {/* Executive Summary Table */}
             <GlassCard variant="glow" className="p-6">
-              <h3 className="text-lg font-bold text-white mb-4">Recommended Intervention Package Schedule</h3>
-              <table className="w-full text-left text-xs font-mono">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 uppercase">
-                    <th className="py-3 px-3">Intervention Strategy</th>
-                    <th className="py-3 px-3">Cooling Reduction</th>
-                    <th className="py-3 px-3">Est. CapEx</th>
-                    <th className="py-3 px-3">Annual Savings</th>
-                    <th className="py-3 px-3">Payback</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                  {roiData.interventions.slice(0, 4).map((item: any) => (
-                    <tr key={item.id}>
-                      <td className="py-3 px-3 font-sans font-bold text-white">{item.name}</td>
-                      <td className="py-3 px-3 text-emerald-400 font-bold">-{item.expectedCoolingEnergyReductionPct}%</td>
-                      <td className="py-3 px-3">{formatCurrency(item.estTotalCostUSD)}</td>
-                      <td className="py-3 px-3 text-amber-400">{formatCurrency(item.expectedAnnualSavingsUSD)}/yr</td>
-                      <td className="py-3 px-3 text-cyan-300">{item.paybackPeriodYears} Yrs</td>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Recommended Intervention Package Schedule</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase">
+                      <th className="py-3 px-3">Intervention Strategy</th>
+                      <th className="py-3 px-3">Cooling Reduction</th>
+                      <th className="py-3 px-3">Est. CapEx</th>
+                      <th className="py-3 px-3">Annual Savings</th>
+                      <th className="py-3 px-3">Payback</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-slate-700 dark:text-slate-200">
+                    {roiData.interventions.slice(0, 4).map((item: any) => (
+                      <tr key={item.id}>
+                        <td className="py-3 px-3 font-sans font-bold text-slate-900 dark:text-white">{item.name}</td>
+                        <td className="py-3 px-3 text-emerald-600 dark:text-emerald-400 font-bold">-{item.expectedCoolingEnergyReductionPct}%</td>
+                        <td className="py-3 px-3">{formatCurrency(item.estTotalCostUSD)}</td>
+                        <td className="py-3 px-3 text-amber-600 dark:text-amber-400">{formatCurrency(item.expectedAnnualSavingsUSD)}/yr</td>
+                        <td className="py-3 px-3 text-cyan-700 dark:text-cyan-300 font-semibold">{item.paybackPeriodYears} Yrs</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </GlassCard>
           </div>
         )}

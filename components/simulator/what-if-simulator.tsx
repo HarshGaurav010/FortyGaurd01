@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { RetrofitOptionId, MultiRetrofitSimulationResult } from '@/lib/retrofit/types';
 import { GlassCard } from '@/components/ui/glass-card';
 import { MetricCard } from '@/components/ui/metric-card';
@@ -32,7 +32,7 @@ export const WhatIfSimulator: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [userRate, setUserRate] = useState<number>(0.14);
 
-  const runSimulation = async (ids: RetrofitOptionId[]) => {
+  const runSimulation = useCallback(async (ids: RetrofitOptionId[]) => {
     setLoading(true);
     try {
       const res = await fetch('/api/retrofits/simulate', {
@@ -52,11 +52,11 @@ export const WhatIfSimulator: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userRate]);
 
   useEffect(() => {
     runSimulation(selectedIds);
-  }, []);
+  }, [runSimulation, selectedIds]);
 
   const toggleRetrofit = (id: RetrofitOptionId) => {
     setSelectedIds((prev) =>
@@ -72,13 +72,13 @@ export const WhatIfSimulator: React.FC = () => {
     <div className="space-y-8">
       {/* Control Panel */}
       <GlassCard variant="glow" className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Sliders className="w-5 h-5 text-cyan-400" />
-              <h3 className="text-xl font-bold text-white tracking-wide">Multi-Retrofit What-If Scenario Engine</h3>
+              <Sliders className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-wide">Multi-Retrofit What-If Scenario Engine</h3>
             </div>
-            <p className="text-xs text-slate-400 font-mono">
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-mono">
               Select combinations of building retrofits to simulate compound thermal stress reduction & portfolio ROI.
             </p>
           </div>
@@ -115,24 +115,24 @@ export const WhatIfSimulator: React.FC = () => {
               <div
                 key={choice.id}
                 onClick={() => toggleRetrofit(choice.id)}
-                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                   isChecked
-                    ? 'bg-cyan-950/40 border-cyan-500/50 shadow-glow text-white'
-                    : 'bg-dark-950/80 border-slate-800 text-slate-400 hover:border-slate-700'
+                    ? 'bg-cyan-500/10 dark:bg-cyan-950/40 border-cyan-500/50 shadow-sm dark:shadow-glow text-slate-900 dark:text-white'
+                    : 'bg-white/80 dark:bg-dark-950/80 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-dark-900 border border-slate-800">{choice.icon}</div>
+                  <div className="p-2 rounded-xl bg-slate-100 dark:bg-dark-900 border border-slate-200 dark:border-slate-800 shadow-sm">{choice.icon}</div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-semibold">{choice.category}</span>
-                    <span className="font-bold text-white font-sans">{choice.name}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold">{choice.category}</span>
+                    <span className="font-bold text-slate-900 dark:text-white font-sans">{choice.name}</span>
                   </div>
                 </div>
                 <div className="shrink-0">
                   {isChecked ? (
-                    <CheckSquare className="w-5 h-5 text-cyan-400" />
+                    <CheckSquare className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                   ) : (
-                    <Square className="w-5 h-5 text-slate-600" />
+                    <Square className="w-5 h-5 text-slate-400 dark:text-slate-600" />
                   )}
                 </div>
               </div>
@@ -151,23 +151,23 @@ export const WhatIfSimulator: React.FC = () => {
             {/* CURRENT Baseline Card */}
             <GlassCard variant="glow" className="p-5 space-y-4 border-rose-500/20">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider">CURRENT BASELINE</span>
+                <span className="text-xs font-mono font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">CURRENT BASELINE</span>
                 <Badge variant="rose">UNMODIFIED</Badge>
               </div>
 
               <div className="space-y-3 font-mono">
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Thermal Stress Score</span>
-                  <span className="text-2xl font-extrabold text-rose-400">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Thermal Stress Score</span>
+                  <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-400">
                     {simulation.baseline.thermalStressScore}/100 ({simulation.baseline.stressCategory})
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Cooling Heat Stress Load</span>
-                  <span className="text-lg font-bold text-white">{simulation.baseline.coolingStressKW} kW</span>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Cooling Heat Stress Load</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white">{simulation.baseline.coolingStressKW} kW</span>
                 </div>
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Energy Impact Rating</span>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Energy Impact Rating</span>
                   <Badge variant="rose" className="mt-1">{simulation.baseline.energyImpactLevel}</Badge>
                 </div>
               </div>
@@ -176,23 +176,23 @@ export const WhatIfSimulator: React.FC = () => {
             {/* SIMULATED Scenario Card */}
             <GlassCard variant="glow" className="p-5 space-y-4 border-emerald-500/30">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">SIMULATED SCENARIO</span>
+                <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">SIMULATED SCENARIO</span>
                 <Badge variant="emerald">PACKAGE SIMULATION</Badge>
               </div>
 
               <div className="space-y-3 font-mono">
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Simulated Thermal Stress</span>
-                  <span className="text-2xl font-extrabold text-emerald-400">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Simulated Thermal Stress</span>
+                  <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
                     {simulation.simulated.thermalStressScore}/100 ({simulation.simulated.stressCategory})
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Simulated Cooling Stress</span>
-                  <span className="text-lg font-bold text-white">{simulation.simulated.coolingStressKW} kW</span>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Simulated Cooling Stress</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white">{simulation.simulated.coolingStressKW} kW</span>
                 </div>
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Simulated Energy Rating</span>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Simulated Energy Rating</span>
                   <Badge variant="emerald" className="mt-1">{simulation.simulated.energyImpactLevel}</Badge>
                 </div>
               </div>
@@ -201,22 +201,22 @@ export const WhatIfSimulator: React.FC = () => {
             {/* DELTAS & REDUCTION Summary Card */}
             <GlassCard variant="glow" className="p-5 space-y-4 border-cyan-500/30">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider">IMPACT DELTA</span>
+                <span className="text-xs font-mono font-bold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider">IMPACT DELTA</span>
                 <Badge variant="cyan">COMPOUND CUT</Badge>
               </div>
 
               <div className="space-y-3 font-mono">
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Modeled Cooling Cut</span>
-                  <span className="text-2xl font-extrabold text-cyan-300">-{simulation.deltas.combinedEnergyReductionPct}%</span>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Modeled Cooling Cut</span>
+                  <span className="text-2xl font-extrabold text-cyan-700 dark:text-cyan-300">-{simulation.deltas.combinedEnergyReductionPct}%</span>
                 </div>
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Cooling Heat Reduction</span>
-                  <span className="text-lg font-bold text-emerald-400">-{simulation.deltas.coolingStressDropKW} kW</span>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Cooling Heat Reduction</span>
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">-{simulation.deltas.coolingStressDropKW} kW</span>
                 </div>
-                <div className="p-3 rounded-xl bg-dark-950 border border-slate-800">
-                  <span className="text-slate-400 text-xs block">Indoor Temp Drop</span>
-                  <span className="text-lg font-bold text-rose-400">-{simulation.deltas.indoorTempDropC}°C</span>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs block">Indoor Temp Drop</span>
+                  <span className="text-lg font-bold text-rose-600 dark:text-rose-400">-{simulation.deltas.indoorTempDropC}°C</span>
                 </div>
               </div>
             </GlassCard>

@@ -1,36 +1,56 @@
-import React from 'react';
-import { cn } from '@/lib/utils/cn';
+'use client';
 
-interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glow' | 'interactive' | 'solid';
-  gradientBorder?: boolean;
+import React from 'react';
+import { clsx } from 'clsx';
+
+interface GlassCardProps {
+  variant?: 'default' | 'glow' | 'interactive' | 'flat';
+  className?: string;
+  children: React.ReactNode;
+  as?: React.ElementType;
+  [key: string]: unknown;
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
-  children,
-  className,
   variant = 'default',
-  gradientBorder = false,
-  ...props
-}) => {
-  const variantStyles = {
-    default: 'glass-panel',
-    glow: 'glass-panel-glow',
-    interactive: 'glass-card-interactive cursor-pointer',
-    solid: 'bg-dark-900/90 border border-slate-800 shadow-xl backdrop-blur-xl',
-  };
+  className,
+  children,
+  as: Tag = 'div',
+  ...rest
+}) => (
+  <Tag
+    className={clsx(
+      /* Base */
+      'rounded-3xl',
+      'border',
+      'bg-white dark:bg-[#141e2e]',
 
-  return (
-    <div
-      className={cn(
-        'relative rounded-2xl p-6 transition-all duration-300 overflow-hidden',
-        variantStyles[variant],
-        gradientBorder && 'before:absolute before:inset-0 before:p-[1px] before:bg-gradient-to-r before:from-cyan-500/30 before:via-violet-500/30 before:to-amber-500/30 before:rounded-2xl before:-z-10',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
+      /* Variant-specific overrides */
+      variant === 'default' && [
+        'border-gray-100 dark:border-white/08',
+        'shadow-card',
+      ],
+      variant === 'glow' && [
+        'border-brand-200/60 dark:border-brand-500/20',
+        'shadow-card shadow-glow',
+      ],
+      variant === 'interactive' && [
+        'border-gray-100 dark:border-white/08',
+        'shadow-card',
+        'transition-all duration-200 cursor-default',
+        'hover:border-brand-200 dark:hover:border-brand-500/35',
+        'hover:shadow-card hover:shadow-glow-sm',
+        'hover:-translate-y-0.5',
+      ],
+      variant === 'flat' && [
+        'border-gray-100 dark:border-white/06',
+        'shadow-none',
+      ],
+
+      className,
+    )}
+    {...rest}
+  >
+    {children}
+  </Tag>
+);

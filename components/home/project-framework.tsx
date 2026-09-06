@@ -24,16 +24,16 @@ export const ProjectFramework: React.FC = () => {
   ];
 
   return (
-    <section id="framework" className="py-20 bg-dark-900 border-t border-slate-800/80 relative overflow-hidden bg-dots">
+    <section id="framework" className="py-24 border-t border-gray-100 dark:border-white/06 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <Badge variant="violet" className="px-3.5 py-1">
+          <Badge variant="brand">
             TECHNICAL ARCHITECTURE
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
             End-to-End Heat Retrofit Framework
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 leading-relaxed">
             From raw satellite and terrestrial sensor telemetry to automated retrofit ROI calculations and agentic guidance.
           </p>
         </div>
@@ -42,22 +42,22 @@ export const ProjectFramework: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {highLevelSteps.map((step, idx) => (
             <GlassCard key={idx} variant="interactive" className="p-6 relative">
-              <div className="text-3xl font-black font-mono text-cyan-500/30 mb-2">{step.num}</div>
-              <h3 className="text-base font-bold text-white mb-2">{step.title}</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">{step.desc}</p>
+              <div className="text-3xl font-black font-mono text-brand-500/40 dark:text-brand-500/30 mb-2">{step.num}</div>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">{step.title}</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{step.desc}</p>
             </GlassCard>
           ))}
         </div>
 
         {/* Deeper System Flow Pipeline */}
         <GlassCard variant="glow" className="p-6">
-          <div className="text-xs font-bold font-mono text-slate-300 uppercase tracking-widest mb-6 text-center">
+          <div className="text-xs font-bold font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest mb-6 text-center">
             System Data Pipeline Architecture
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3">
             {architectureFlow.map((node, index) => (
               <React.Fragment key={index}>
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-dark-950 border border-slate-800 backdrop-blur-md font-mono text-xs text-white">
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-800 backdrop-blur-md font-mono text-xs text-slate-900 dark:text-white shadow-sm">
                   {node.icon}
                   <span>{node.name}</span>
                 </div>
