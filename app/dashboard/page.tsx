@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const fetchHeatData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/fortyguard?lat=25.2048&lng=55.2708');
+      const res = await fetch('/api/fortyguard?lat=33.4484&lng=-112.0740');
       const json = await res.json();
       if (json.success) {
         setHeatMap(json.data);
@@ -43,7 +43,7 @@ export default function DashboardPage() {
             </div>
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Hyperlocal Heat Intelligence Dashboard</h1>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-mono">
-              Downtown Financial District • Spatial Resolution: 2.0m² • Telemetry Sync Active
+              Downtown Phoenix, Arizona • Spatial Resolution: 2.0m² • Telemetry Sync Active
             </p>
           </div>
           <button

@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
               <li><a href="https://fortyguard.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-cyan-600 dark:hover:text-cyan-400">FortyGuard Heat Platform <ExternalLink className="w-3 h-3" /></a></li>
               <li><a href="#framework" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Project Architecture Flow</a></li>
-              <li><a href="#copilot" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">AI Thermal Copilot</a></li>
+              <li><Link href="/ai-copilot" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">AI Thermal Copilot</Link></li>
               <li><a href="#retrofits" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Intervention Guidelines</a></li>
             </ul>
           </div>

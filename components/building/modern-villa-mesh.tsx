@@ -44,12 +44,12 @@ export const ModernVillaMesh: React.FC<ModernVillaMeshProps> = ({
         color: isHeat
           ? isDark ? '#1f2b3e' : '#233044'
           : isSolar
-          ? isDark ? '#1c2637' : '#e5dfd5'
-          : isRetro
-          ? isDark ? '#132338' : '#e2dbcf'
-          : isDark
-          ? '#253347'
-          : '#f4f0e8',
+            ? isDark ? '#1c2637' : '#e5dfd5'
+            : isRetro
+              ? isDark ? '#132338' : '#e2dbcf'
+              : isDark
+                ? '#253347'
+                : '#f4f0e8',
         roughness: 0.32,
         metalness: 0.05,
       }),
@@ -79,21 +79,21 @@ export const ModernVillaMesh: React.FC<ModernVillaMeshProps> = ({
         color: isHeat
           ? '#f97316'
           : isSolar
-          ? '#f59e0b'
-          : isRetro
-          ? '#38bdf8'
-          : isDark
-          ? '#fbbf24'
-          : '#94a3b8',
+            ? '#f59e0b'
+            : isRetro
+              ? '#38bdf8'
+              : isDark
+                ? '#fbbf24'
+                : '#94a3b8',
         emissive: isHeat
           ? '#ea580c'
           : isSolar
-          ? '#d97706'
-          : isRetro
-          ? '#0284c7'
-          : isDark
-          ? '#d97706'
-          : '#000000',
+            ? '#d97706'
+            : isRetro
+              ? '#0284c7'
+              : isDark
+                ? '#d97706'
+                : '#000000',
         emissiveIntensity: isDark ? 0.8 : isHeat ? 0.5 : 0.05,
         roughness: 0.08,
         metalness: 0.85,
@@ -105,21 +105,21 @@ export const ModernVillaMesh: React.FC<ModernVillaMeshProps> = ({
         color: isHeat
           ? '#ef4444'
           : isSolar
-          ? '#f59e0b'
-          : isRetro
-          ? '#22d3ee'
-          : isDark
-          ? '#fbbf24'
-          : '#38bdf8',
+            ? '#f59e0b'
+            : isRetro
+              ? '#22d3ee'
+              : isDark
+                ? '#fbbf24'
+                : '#38bdf8',
         emissive: isHeat
           ? '#dc2626'
           : isSolar
-          ? '#f59e0b'
-          : isRetro
-          ? '#06b6d4'
-          : isDark
-          ? '#f59e0b'
-          : '#0284c7',
+            ? '#f59e0b'
+            : isRetro
+              ? '#06b6d4'
+              : isDark
+                ? '#f59e0b'
+                : '#0284c7',
         emissiveIntensity: isDark ? 0.95 : isHeat ? 0.85 : 0.2,
         roughness: 0.04,
         metalness: 0.95,
@@ -139,19 +139,19 @@ export const ModernVillaMesh: React.FC<ModernVillaMeshProps> = ({
         color: isHeat
           ? '#ef4444'
           : isSolar
-          ? '#fbbf24'
-          : isRetro
-          ? '#10b981'
-          : isDark
-          ? '#1e293b'
-          : '#cbd5e1',
+            ? '#fbbf24'
+            : isRetro
+              ? '#10b981'
+              : isDark
+                ? '#1e293b'
+                : '#cbd5e1',
         emissive: isHeat
           ? '#dc2626'
           : isSolar
-          ? '#f59e0b'
-          : isRetro
-          ? '#059669'
-          : '#000000',
+            ? '#f59e0b'
+            : isRetro
+              ? '#059669'
+              : '#000000',
         emissiveIntensity: isHeat ? 0.85 : isRetro ? 0.5 : 0.0,
         roughness: 0.35,
       }),

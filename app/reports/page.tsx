@@ -35,13 +35,13 @@ export default function ReportsPage() {
               <Badge variant="violet"><FileText className="w-3 h-3 text-indigo-500" /> EXECUTIVE AUDIT REPORT</Badge>
             </div>
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Heat Retrofit Investment & Energy Report</h1>
-            <p className="text-xs text-slate-600 dark:text-slate-400 font-mono">
-              Prepared for Nexus Horizon Plaza • FortyGuard Telemetry Certified
-            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="secondary" size="sm" icon={<Printer className="w-4 h-4" />} onClick={handlePrint}>
-              Print Report
+          <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#132039] border border-gray-200 dark:border-white/10 text-xs font-mono text-gray-600 dark:text-gray-300 shadow-sm">
+              Prepared for Desert Commerce Center — Phoenix, Arizona, USA • Modeled Energy Audit
+            </span>
+            <Button variant="outline" className="gap-2 bg-white dark:bg-[#132039] border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/05 shadow-sm" onClick={handlePrint}>
+              <Printer className="w-4 h-4" /> Print Report
             </Button>
             <Button variant="glow" size="sm" icon={<Download className="w-4 h-4" />}>
               Export PDF Audit

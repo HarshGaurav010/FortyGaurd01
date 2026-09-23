@@ -36,8 +36,8 @@ export const Hero: React.FC = () => {
 
   // Compute metrics from actual models and calculations
   const defaultHeatMap = {
-    regionId: 'FG-DXB-001',
-    regionName: 'Downtown Financial District',
+    regionId: 'FG-PHX-001',
+    regionName: 'Downtown Phoenix',
     center: DEFAULT_BUILDING_PROFILE.coordinates,
     gridResolutionMeters: 2.0,
     averageLSTC: 48.4,
@@ -335,8 +335,8 @@ export const Hero: React.FC = () => {
                   <ArrowRight className="w-3.5 h-3.5 ml-auto text-gray-400 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
 
-                <a
-                  href="#copilot"
+                <Link
+                  href="/ai-copilot"
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-gray-100/70 dark:hover:bg-white/06 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all group"
                 >
                   <span className="p-1.5 rounded-lg bg-violet-500/10 text-violet-500">
@@ -344,7 +344,7 @@ export const Hero: React.FC = () => {
                   </span>
                   <span className="font-medium">Ask AI Copilot</span>
                   <ArrowRight className="w-3.5 h-3.5 ml-auto text-gray-400 group-hover:translate-x-0.5 transition-transform" />
-                </a>
+                </Link>
 
                 <Link
                   href="/reports"

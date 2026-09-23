@@ -7,13 +7,13 @@ import { Flame, Menu, X, Sun, Moon, ArrowRight } from 'lucide-react';
 import { useTheme } from '@/components/providers/theme-provider';
 
 const NAV_LINKS = [
-  { label: 'Overview',          href: '/',              id: 'overview'  },
-  { label: 'Thermal Analysis',  href: '/analysis',      id: 'analysis'  },
-  { label: '3D Digital Twin',   href: '/digital-twin',  id: 'twin'      },
-  { label: 'Retrofits & ROI',   href: '/retrofits',     id: 'retrofits' },
-  { label: 'What-If Simulator', href: '/simulator',     id: 'simulator' },
-  { label: 'Reports',           href: '/reports',       id: 'reports'   },
-  { label: 'AI Copilot',        href: '/analysis',      id: 'copilot'   },
+  { label: 'Overview', href: '/', id: 'overview' },
+  { label: 'Thermal Analysis', href: '/analysis', id: 'analysis' },
+  { label: '3D Digital Twin', href: '/digital-twin', id: 'twin' },
+  { label: 'Retrofits & ROI', href: '/retrofits', id: 'retrofits' },
+  { label: 'What-If Simulator', href: '/simulator', id: 'simulator' },
+  { label: 'Reports', href: '/reports', id: 'reports' },
+  { label: 'AI Copilot', href: '/ai-copilot', id: 'copilot' },
 ];
 
 function ThemeToggle() {
@@ -25,7 +25,7 @@ function ThemeToggle() {
       className="p-2 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-white/20 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
     >
       {theme === 'dark'
-        ? <Sun  className="w-4 h-4" aria-hidden />
+        ? <Sun className="w-4 h-4" aria-hidden />
         : <Moon className="w-4 h-4" aria-hidden />}
     </button>
   );
@@ -33,7 +33,7 @@ function ThemeToggle() {
 
 export function Navbar() {
   const pathname = usePathname();
-  const [scrolled, setScrolled]     = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {

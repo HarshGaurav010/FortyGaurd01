@@ -14,15 +14,17 @@ import { formatCurrency } from '@/lib/utils/formatters';
 import { RetrofitRecommendationSection } from '@/components/retrofit/retrofit-recommendation';
 import { RetrofitRoadmapSection } from '@/components/retrofit/retrofit-roadmap';
 import { retrofitRecommendationEngine } from '@/lib/retrofit/recommendation';
+import { DEFAULT_BUILDING_PROFILE } from '@/lib/models/building-thermal-model';
 
 export default function AnalysisPage() {
-  const [addressInput, setAddressInput] = useState('Financial District, San Francisco, CA');
-  const [latInput, setLatInput] = useState<number>(37.7749);
-  const [lngInput, setLngInput] = useState<number>(-122.4194);
+  const [addressInput, setAddressInput] = useState('Desert Commerce Center, Phoenix, AZ, USA');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [latInput, setLatInput] = useState<number>(DEFAULT_BUILDING_PROFILE.coordinates.lat);
+  const [lngInput, setLngInput] = useState<number>(DEFAULT_BUILDING_PROFILE.coordinates.lng);
   const [filterType, setFilterType] = useState<1 | 2 | 3 | 4>(1);
   const [startDate, setStartDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState<string>('14:00');
-  
+
   const [analysisData, setAnalysisData] = useState<ComprehensiveAnalysisResult | null>(null);
   const [isDemoData, setIsDemoData] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);

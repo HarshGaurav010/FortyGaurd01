@@ -27,8 +27,8 @@ import {
 
 // ── Shared consistent heatmap for all Overview calculations ──
 const OVERVIEW_HEATMAP = {
-  regionId: 'FG-DXB-001',
-  regionName: 'Downtown Financial District',
+  regionId: 'FG-PHX-001',
+  regionName: 'Downtown Phoenix',
   center: DEFAULT_BUILDING_PROFILE.coordinates,
   gridResolutionMeters: 2.0,
   averageLSTC: 48.4,
@@ -116,7 +116,7 @@ export default function HomePage() {
                     <span className="font-bold text-gray-900 dark:text-white text-[11px]">THERMAL ENVELOPE AUDIT</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/08 text-[10px] text-gray-500 dark:text-slate-400">
-                    DXB-2024 · 165° SSE
+                    PHX-2024 · 165° SSE
                   </span>
                 </div>
 
@@ -176,7 +176,7 @@ export default function HomePage() {
 
                 {/* Footer link to Digital Twin */}
                 <div className="pt-2 border-t border-gray-100 dark:border-white/08 flex items-center justify-between">
-                  <span className="text-[11px] text-gray-500 dark:text-slate-400">Nexus Horizon Villa model</span>
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400">Desert Commerce Center model</span>
                   <Link
                     href="/digital-twin"
                     className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-500 transition-colors"
@@ -200,10 +200,10 @@ export default function HomePage() {
               <div className="space-y-1.5">
                 <Badge variant="rose">BUILDING HEALTH ASSESSMENT</Badge>
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-                  Nexus Horizon Villa — Dubai, UAE
+                  Desert Commerce Center — Phoenix, Arizona, USA
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-                  FortyGuard heat data · Building thermal model · Real-time analysis
+                  FortyGuard heat data · Building thermal model · Modeled analysis
                 </p>
               </div>
               <Link href="/analysis">
@@ -227,7 +227,7 @@ export default function HomePage() {
                   icon: <Zap className="w-4 h-4 text-brand-500" />,
                   label: 'Peak Cooling Demand',
                   value: `${DEFAULT_BUILDING_PROFILE.baselinePeakDemandKW.toLocaleString()} kW`,
-                  sub: 'Measured baseline',
+                  sub: 'Modeled baseline',
                   bg: 'bg-white dark:bg-[#0c1426] border-gray-200/80 dark:border-white/10',
                   valueColor: 'text-gray-900 dark:text-white',
                 },
@@ -427,8 +427,8 @@ export default function HomePage() {
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
                   Building Digital Twin
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-                  Interactive 3D visualization of Nexus Horizon Villa with live FortyGuard thermal overlays
+                <p className="text-[10px] text-gray-500 font-mono mb-2">
+                  Interactive 3D visualization of Desert Commerce Center with live FortyGuard thermal overlays
                 </p>
               </div>
               <Link href="/digital-twin">
@@ -486,7 +486,7 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
-                  <Link href="/analysis">
+                  <Link href="/ai-copilot">
                     <button className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all">
                       <Bot className="w-4 h-4" /> Open AI Copilot
                     </button>

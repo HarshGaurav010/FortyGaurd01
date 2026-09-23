@@ -2,10 +2,10 @@ import { BuildingProfile, BuildingThermalStressReport } from '@/types/building';
 import { FortyGuardHeatMap } from '@/types/fortyguard';
 
 export const DEFAULT_BUILDING_PROFILE: BuildingProfile = {
-  id: 'BLD-DXB-2024-001',
-  name: 'Nexus Horizon Plaza',
-  address: 'Financial Center Rd, Business Bay, Dubai',
-  coordinates: { lat: 25.2048, lng: 55.2708 },
+  id: 'BLD-PHX-2024-001',
+  name: 'Desert Commerce Center',
+  address: 'E Camelback Rd, Phoenix, Arizona, USA',
+  coordinates: { lat: 33.4484, lng: -112.0740 },
   useType: 'COMMERCIAL_OFFICE',
   grossAreaSqFt: 185000,
   floorsCount: 16,
@@ -32,7 +32,7 @@ export function computeThermalStressReport(
 
   const roofLST = heatMap.peakLSTC;
   const avgSurface = heatMap.averageLSTC;
-  
+
   // Thermal stress score out of 100
   const roofWeight = (roofLST - 35) * 2.2;
   const hvacAgeWeight = building.hvacAgeYears * 1.8;

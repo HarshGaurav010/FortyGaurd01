@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '3D Digital Twin — HeatRetrofit AI',
+  title: '3D Digital Twin | HeatRetrofit AI',
   description:
-    'Immersive Building Management System console. Explore thermal stress, retrofit layers, and 24-hour microclimate dynamics on the Nexus Horizon Villa 3D digital twin.',
+    'Immersive Building Management System console. Explore thermal stress, retrofit layers, and 24-hour microclimate dynamics on the Desert Commerce Center 3D digital twin.',
 };
 
 /**

@@ -115,11 +115,10 @@ export const WhatIfSimulator: React.FC = () => {
               <div
                 key={choice.id}
                 onClick={() => toggleRetrofit(choice.id)}
-                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                  isChecked
+                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${isChecked
                     ? 'bg-cyan-500/10 dark:bg-cyan-950/40 border-cyan-500/50 shadow-sm dark:shadow-glow text-slate-900 dark:text-white'
                     : 'bg-white/80 dark:bg-dark-950/80 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-slate-100 dark:bg-dark-900 border border-slate-200 dark:border-slate-800 shadow-sm">{choice.icon}</div>

@@ -12,8 +12,8 @@ import { ShieldCheck, Layers, Sparkles } from 'lucide-react';
 export default function RetrofitsPage() {
   const { recommendations, roadmap, baseReport } = useMemo(() => {
     const report = computeThermalStressReport(DEFAULT_BUILDING_PROFILE, {
-      regionId: 'FG-UAE-DXB-042',
-      regionName: 'Downtown Financial District',
+      regionId: 'FG-PHX-001',
+      regionName: 'Downtown Phoenix',
       center: DEFAULT_BUILDING_PROFILE.coordinates,
       gridResolutionMeters: 2.0,
       averageLSTC: 48.4,

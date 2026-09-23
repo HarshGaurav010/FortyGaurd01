@@ -16,10 +16,10 @@ export class CopilotEngine {
 
     // 1. Get live building & heat telemetry baseline
     const building = buildingProfile || {
-      id: 'BLD-DXB-2024-001',
-      name: 'Nexus Horizon Plaza',
-      address: 'Financial Center Rd, Business Bay, Dubai',
-      coordinates: { lat: 25.2048, lng: 55.2708 },
+      id: 'BLD-PHX-2024-001',
+      name: 'Desert Commerce Center',
+      address: 'Phoenix, Arizona, USA',
+      coordinates: { lat: 33.4484, lng: -112.0740 },
       useType: 'COMMERCIAL_OFFICE',
       grossAreaSqFt: 185000,
       floorsCount: 16,
@@ -37,8 +37,8 @@ export class CopilotEngine {
     };
 
     const heatMap: FortyGuardHeatMap = heatMapData || {
-      regionId: 'FG-UAE-DXB-042',
-      regionName: 'Downtown Financial District',
+      regionId: 'FG-PHX-001',
+      regionName: 'Downtown Phoenix',
       center: building.coordinates,
       gridResolutionMeters: 2.0,
       averageLSTC: 48.4,

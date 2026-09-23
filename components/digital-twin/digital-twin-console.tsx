@@ -38,8 +38,8 @@ type ViewLayerMode = 'heatmap' | 'solar' | 'retrofit' | 'baseline';
 
 // ── Shared mock heatmap used consistently everywhere for data computation ──
 const MOCK_HEATMAP = {
-  regionId: 'FG-DXB-001',
-  regionName: 'Downtown Financial District',
+  regionId: 'FG-PHX-001',
+  regionName: 'Downtown Phoenix',
   center: DEFAULT_BUILDING_PROFILE.coordinates,
   gridResolutionMeters: 2.0,
   averageLSTC: 48.4,
@@ -145,14 +145,16 @@ export const DigitalTwinConsole: React.FC = () => {
             <span className="hidden sm:inline text-[10px]">Overview</span>
           </Link>
           <span className="text-gray-200 dark:text-gray-700">|</span>
-          <span className="flex items-center gap-1.5 text-brand-500 font-bold tracking-wider text-[10px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-ping" />
-            DIGITAL TWIN CONSOLE
-          </span>
+          <div className="flex items-center gap-2.5">
+            <span className="hidden sm:inline text-[11px] text-gray-500 dark:text-slate-400">
+              Model:
+            </span>
+            <strong className="text-gray-900 dark:text-white">Desert Commerce Center</strong>
+          </div>
           <span className="text-gray-200 dark:text-gray-700 hidden md:inline">·</span>
           <span className="text-gray-700 dark:text-gray-300 hidden md:inline truncate">
             Model:{' '}
-            <strong className="text-gray-900 dark:text-white">Nexus Horizon Villa</strong>
+            <strong className="text-gray-900 dark:text-white">Desert Commerce Center</strong>
           </span>
           <span className="text-gray-200 dark:text-gray-700 hidden lg:inline">·</span>
           <span className="text-gray-500 hidden lg:inline">FortyGuard LST · 1.5 m² resolution</span>
@@ -172,11 +174,10 @@ export const DigitalTwinConsole: React.FC = () => {
             <button
               key={preset.id}
               onClick={() => setCameraPreset(preset.id)}
-              className={`px-2.5 py-1 rounded-lg transition-all text-[10px] ${
-                cameraPreset === preset.id
+              className={`px-2.5 py-1 rounded-lg transition-all text-[10px] ${cameraPreset === preset.id
                   ? 'bg-white dark:bg-[#16233b] text-gray-900 dark:text-white shadow-sm font-semibold border border-transparent dark:border-white/15'
                   : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+                }`}
             >
               {preset.label}
             </button>
@@ -187,11 +188,10 @@ export const DigitalTwinConsole: React.FC = () => {
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setAutoRotate(!autoRotate)}
-            className={`h-7 px-2.5 rounded-lg border text-[10px] transition-all flex items-center gap-1 ${
-              autoRotate
+            className={`h-7 px-2.5 rounded-lg border text-[10px] transition-all flex items-center gap-1 ${autoRotate
                 ? 'bg-brand-500 text-white border-transparent'
                 : 'bg-white dark:bg-[#0c1426] text-gray-600 dark:text-slate-300 border-gray-200 dark:border-white/10 hover:text-gray-900 dark:hover:text-white'
-            }`}
+              }`}
           >
             <RefreshCw className={`w-3 h-3 ${autoRotate ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Orbit</span>
@@ -199,11 +199,10 @@ export const DigitalTwinConsole: React.FC = () => {
 
           <button
             onClick={() => setShowHotspots(!showHotspots)}
-            className={`h-7 px-2.5 rounded-lg border text-[10px] transition-all flex items-center gap-1 ${
-              showHotspots
+            className={`h-7 px-2.5 rounded-lg border text-[10px] transition-all flex items-center gap-1 ${showHotspots
                 ? 'bg-gray-100 dark:bg-[#16233b] text-gray-900 dark:text-white border-gray-300 dark:border-white/20 font-semibold'
                 : 'bg-white dark:bg-[#0c1426] text-gray-500 dark:text-slate-400 border-gray-200 dark:border-white/10'
-            }`}
+              }`}
           >
             {showHotspots ? (
               <Eye className="w-3 h-3" />
@@ -251,12 +250,12 @@ export const DigitalTwinConsole: React.FC = () => {
                 <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-gray-900 dark:text-white">
                   BUILDING
                 </span>
-                <span className="ml-auto text-[9px] font-mono text-gray-400 dark:text-slate-500">DXB-2024</span>
+                <span className="ml-auto text-[9px] font-mono text-gray-400 dark:text-slate-500">PHX-2024</span>
               </div>
               <dl className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
                 {[
-                  { label: 'Type', value: 'Commercial Office' },
-                  { label: 'Location', value: 'Dubai, UAE' },
+                  { label: 'Type', value: 'Modern Villa' },
+                  { label: 'Location', value: 'Phoenix, AZ, USA' },
                   { label: 'Orientation', value: '165° SSE', accent: true },
                   { label: 'Gross Area', value: '185,000 sq ft' },
                   { label: 'Window-Wall', value: '58% WWR' },
@@ -270,11 +269,10 @@ export const DigitalTwinConsole: React.FC = () => {
                       {label}
                     </span>
                     <span
-                      className={`font-semibold truncate block leading-tight ${
-                        accent
+                      className={`font-semibold truncate block leading-tight ${accent
                           ? 'text-brand-600 dark:text-brand-400'
                           : 'text-gray-900 dark:text-white'
-                      }`}
+                        }`}
                     >
                       {value}
                     </span>
@@ -297,7 +295,7 @@ export const DigitalTwinConsole: React.FC = () => {
                   {
                     id: 'heatmap' as const,
                     name: 'Thermal Stress',
-                    desc: 'FortyGuard LST Heatmap',
+                    desc: 'Surface LST Heatmap',
                     icon: <Flame className="w-3.5 h-3.5 text-rose-500" />,
                     active: 'border-rose-500/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-200 shadow-sm font-semibold',
                   },
@@ -326,11 +324,10 @@ export const DigitalTwinConsole: React.FC = () => {
                   <button
                     key={layer.id}
                     onClick={() => setViewMode(layer.id)}
-                    className={`w-full text-left p-2 rounded-xl border transition-all flex items-center gap-2.5 text-xs ${
-                      viewMode === layer.id
+                    className={`w-full text-left p-2 rounded-xl border transition-all flex items-center gap-2.5 text-xs ${viewMode === layer.id
                         ? `${layer.active}`
                         : 'border-gray-200/70 dark:border-white/10 bg-gray-50/70 dark:bg-[#0c1426] text-gray-700 dark:text-slate-200 hover:border-gray-300 dark:hover:border-white/20 hover:bg-white dark:hover:bg-[#111c33]'
-                    }`}
+                      }`}
                   >
                     <span className="p-1.5 rounded-lg bg-white dark:bg-[#132039] shadow-sm shrink-0 border border-gray-100 dark:border-white/10">
                       {layer.icon}
@@ -355,7 +352,7 @@ export const DigitalTwinConsole: React.FC = () => {
                 </span>
                 <span className="ml-auto flex items-center gap-1 text-[9px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  LIVE
+                  MODELED
                 </span>
               </div>
               <dl className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
@@ -552,7 +549,7 @@ export const DigitalTwinConsole: React.FC = () => {
                   <p className="text-[9px] text-gray-500 dark:text-slate-400 font-sans mb-0.5">Peak Cooling Demand</p>
                   <p className="text-lg font-black text-gray-900 dark:text-white">
                     {DEFAULT_BUILDING_PROFILE.baselinePeakDemandKW.toLocaleString()} kW
-                    <span className="text-[9px] text-gray-400 dark:text-slate-500 font-sans ml-1">[measured]</span>
+                    <span className="text-[9px] text-gray-400 dark:text-slate-500 font-sans ml-1">[modeled]</span>
                   </p>
                 </div>
 
@@ -686,11 +683,10 @@ export const DigitalTwinConsole: React.FC = () => {
             <button
               key={t}
               onClick={() => setTimeOfDay(t)}
-              className={`px-2 py-1 rounded-lg border text-[9px] font-semibold transition-all ${
-                timeOfDay === t
+              className={`px-2 py-1 rounded-lg border text-[9px] font-semibold transition-all ${timeOfDay === t
                   ? 'bg-brand-500 text-white border-transparent'
                   : 'bg-gray-100 dark:bg-[#0c1426] text-gray-600 dark:text-slate-300 border-gray-200 dark:border-white/10 hover:border-brand-400 dark:hover:border-brand-500'
-              }`}
+                }`}
             >
               {label}
             </button>

@@ -50,8 +50,8 @@ export const DigitalTwinWorkspace: React.FC = () => {
   // Compute live data from real models
   const defaultHeatMap = useMemo(
     () => ({
-      regionId: 'FG-DXB-001',
-      regionName: 'Downtown Financial District',
+      regionId: 'FG-PHX-001',
+      regionName: 'Downtown Phoenix',
       center: DEFAULT_BUILDING_PROFILE.coordinates,
       gridResolutionMeters: 2.0,
       averageLSTC: 48.4,
@@ -154,7 +154,7 @@ export const DigitalTwinWorkspace: React.FC = () => {
             </span>
             <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">•</span>
             <span className="text-gray-700 dark:text-gray-300 hidden sm:inline text-[11px]">
-              Model: <strong className="text-gray-900 dark:text-white font-semibold">Nexus Horizon Villa</strong>
+              Model: <strong className="text-gray-900 dark:text-white font-semibold">Desert Commerce Center</strong>
             </span>
             <span className="text-gray-300 dark:text-gray-700 hidden md:inline">•</span>
             <span className="text-gray-500 hidden md:inline text-[11px]">
@@ -247,14 +247,14 @@ export const DigitalTwinWorkspace: React.FC = () => {
                     BUILDING
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-gray-400 dark:text-slate-500">DXB-2024</span>
+                <span className="text-[10px] font-mono text-gray-400 dark:text-slate-500">PHX-2024</span>
               </div>
 
               {/* Compact Specs Grid */}
               <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
                 {[
                   { label: 'Type', value: 'Modern Villa' },
-                  { label: 'Location', value: 'Dubai, UAE' },
+                  { label: 'Location', value: 'Phoenix, AZ, USA' },
                   { label: 'Orientation', value: '165° SSE', accent: true },
                   { label: 'Gross Area', value: '185k sq ft' },
                   { label: 'Window-Wall', value: '58% WWR' },
@@ -290,7 +290,7 @@ export const DigitalTwinWorkspace: React.FC = () => {
                   {
                     id: 'heatmap' as const,
                     name: 'Thermal Stress',
-                    desc: 'FortyGuard LST Heatmap',
+                    desc: 'Surface LST Heatmap',
                     icon: <Flame className="w-3.5 h-3.5 text-rose-500" />,
                     activeStyle: 'border-rose-500/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-200 shadow-sm font-semibold',
                   },
