@@ -6,10 +6,16 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function formatNumber(num: number, decimals: number = 1): string {
+export function formatNumber(num: number, decimals: number = 0): string {
   return new Intl.NumberFormat('en-US', {
     maximumFractionDigits: decimals,
     minimumFractionDigits: decimals,
+  }).format(num);
+}
+
+export function formatInteger(num: number): string {
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 0,
   }).format(num);
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Flame,
@@ -28,26 +28,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { OverviewHouseScene, CameraViewPreset } from '@/components/building/overview-house-scene';
 import {
-  DEFAULT_BUILDING_PROFILE,
-  computeThermalStressReport,
-} from '@/lib/models/building-thermal-model';
+  useBuildingScenario,
+  useBuildingThermalModel,
+} from '@/components/scenarios/building-scenario-provider';
+import { getBaselineHeatMapForScenario } from '@/lib/demo/building-scenario-adapter';
 import { CATALOG_RETROFITS } from '@/lib/calculations/thermal-stress-calculator';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { formatCurrency, formatNumber } from '@/lib/utils/formatters';
 
 type ViewLayerMode = 'heatmap' | 'solar' | 'retrofit' | 'baseline';
-
-// ── Shared mock heatmap used consistently everywhere for data computation ──
-const MOCK_HEATMAP = {
-  regionId: 'FG-PHX-001',
-  regionName: 'Downtown Phoenix',
-  center: DEFAULT_BUILDING_PROFILE.coordinates,
-  gridResolutionMeters: 2.0,
-  averageLSTC: 48.4,
-  peakLSTC: 56.8,
-  heatStressScore: 33, // Kept for type shape; thermalStressScore from formula is authoritative
-  thermalHotspots: [],
-  points: [],
-};
 
 export const DigitalTwinConsole: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewLayerMode>('heatmap');
@@ -59,11 +47,14 @@ export const DigitalTwinConsole: React.FC = () => {
   const [showLeftPanel, setShowLeftPanel] = useState<boolean>(true);
   const [showRightPanel, setShowRightPanel] = useState<boolean>(true);
 
-  // Derive data from real calculation engine (single source of truth)
-  const thermalReport = useMemo(
-    () => computeThermalStressReport(DEFAULT_BUILDING_PROFILE, MOCK_HEATMAP),
-    []
-  );
+  // Consume scenario and thermal model from single source of truth provider
+  const { selectedScenario, buildingProfile, thermalReport: scenarioThermalReport } = useBuildingScenario();
+  const { building: modelBuilding, report: modelReport, scenario: modelScenario } = useBuildingThermalModel();
+
+  const activeScenario = selectedScenario || modelScenario;
+  const activeBuilding = buildingProfile || modelBuilding;
+  const activeThermalReport = scenarioThermalReport || modelReport;
+  const baselineHeatMap = getBaselineHeatMapForScenario(activeScenario);
 
   const topRetrofit = CATALOG_RETROFITS[0];
 
@@ -82,35 +73,35 @@ export const DigitalTwinConsole: React.FC = () => {
   > = {
     roof: {
       title: 'Roof Membrane Hotspot',
-      location: 'Main Rooftop Slab (14,200 sq ft)',
-      temp: '56.8 °C',
-      anomaly: '+32.8 °C vs ambient air',
+      location: `Main Rooftop Slab (${formatNumber(activeScenario.roofAreaSqFt)} sq ft)`,
+      temp: `${baselineHeatMap.peakLSTC} °C`,
+      anomaly: `R-${activeScenario.roofRValue} (${activeScenario.roofType.replace(/_/g, ' ')})`,
       solution: 'High-Albedo Cool Roof Coating (SRI 108)',
       solutionSpecs:
         'Elastomeric acrylic solar-reflective coating reflecting 88% solar radiation.',
-      savings: '$31,200 /yr',
+      savings: `${formatCurrency(Math.round(activeThermalReport.annualCoolingWasteCostUSD * 0.38))} /yr`,
       payback: '1.6 yrs',
     },
     facade: {
       title: 'South-East Panoramic Glazing',
-      location: 'First Floor Corner Suite Facade',
-      temp: '49.2 °C',
-      anomaly: 'SHGC 0.65 (High solar heat gain)',
+      location: `${activeScenario.orientationDegrees}° Solar Exposure Facade`,
+      temp: `${(baselineHeatMap.peakLSTC - 7.6).toFixed(1)} °C`,
+      anomaly: `${Math.round(activeScenario.windowToWallRatio * 100)}% WWR Glazing`,
       solution: 'Spectrally Selective Nano-Ceramic Film',
       solutionSpecs:
-        'Applied to interior/exterior glass surfaces. SHGC reduced from 0.65 to 0.22.',
-      savings: '$18,700 /yr',
+        'Applied to interior/exterior glass surfaces to suppress solar infrared gain.',
+      savings: `${formatCurrency(Math.round(activeThermalReport.annualCoolingWasteCostUSD * 0.32))} /yr`,
       payback: '2.4 yrs',
     },
     insulation: {
       title: 'Envelope Thermal Bridge',
       location: 'Ground Floor Entryway & Perimeter Walls',
-      temp: '44.6 °C',
-      anomaly: 'R-8.5 (Sub-optimal wall insulation)',
+      temp: `${(baselineHeatMap.averageLSTC - 3.8).toFixed(1)} °C`,
+      anomaly: `R-${activeScenario.roofRValue} Insulation Profile`,
       solution: 'EIFS Wall Thermal Insulation Upgrade',
       solutionSpecs:
-        'Continuous EPS barrier system boosting resistance to R-26.5.',
-      savings: '$12,400 /yr',
+        'Continuous EPS barrier system boosting perimeter thermal resistance.',
+      savings: `${formatCurrency(Math.round(activeThermalReport.annualCoolingWasteCostUSD * 0.18))} /yr`,
       payback: '5.9 yrs',
     },
   };
@@ -125,12 +116,12 @@ export const DigitalTwinConsole: React.FC = () => {
     EXTREME: { label: 'Extreme', color: 'text-rose-600 dark:text-rose-400' },
     CRITICAL: { label: 'Critical', color: 'text-red-600 dark:text-red-400' },
   };
-  const stressDisplay = stressCategoryLabel[thermalReport.stressCategory] ??
+  const stressDisplay = stressCategoryLabel[activeThermalReport.stressCategory] ??
     stressCategoryLabel['MODERATE'];
 
   return (
-    // Full-page immersive BMS console — occupies all space below the navbar without conflicting with layout footer
-    <div className="relative w-full flex flex-col bg-gray-50 dark:bg-[#03060f] select-none" style={{ height: 'calc(100svh - 72px)' }}>
+    // Full-page immersive BMS console — occupies all space below the 80px navbar without conflicting with layout footer
+    <div className="relative w-full flex flex-col bg-gray-50 dark:bg-[#03060f] select-none" style={{ height: 'calc(100svh - 80px)' }}>
       {/* ═══════════════════════════════════════════════════════════════
           TOP CONTROL BAR
       ═══════════════════════════════════════════════════════════════ */}
@@ -149,15 +140,15 @@ export const DigitalTwinConsole: React.FC = () => {
             <span className="hidden sm:inline text-[11px] text-gray-500 dark:text-slate-400">
               Model:
             </span>
-            <strong className="text-gray-900 dark:text-white">Desert Commerce Center</strong>
+            <strong className="text-gray-900 dark:text-white">{activeScenario.name}</strong>
           </div>
           <span className="text-gray-200 dark:text-gray-700 hidden md:inline">·</span>
           <span className="text-gray-700 dark:text-gray-300 hidden md:inline truncate">
-            Model:{' '}
-            <strong className="text-gray-900 dark:text-white">Desert Commerce Center</strong>
+            Location:{' '}
+            <strong className="text-gray-900 dark:text-white">{activeScenario.location.city}, {activeScenario.location.state}</strong>
           </span>
           <span className="text-gray-200 dark:text-gray-700 hidden lg:inline">·</span>
-          <span className="text-gray-500 hidden lg:inline">FortyGuard LST · 1.5 m² resolution</span>
+          <span className="text-gray-500 hidden lg:inline">{activeScenario.id} · FortyGuard LST</span>
         </div>
 
         {/* Center: View Presets */}
@@ -250,16 +241,20 @@ export const DigitalTwinConsole: React.FC = () => {
                 <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-gray-900 dark:text-white">
                   BUILDING
                 </span>
-                <span className="ml-auto text-[9px] font-mono text-gray-400 dark:text-slate-500">PHX-2024</span>
+                <span className="ml-auto text-[9px] font-mono text-gray-400 dark:text-slate-500">{activeScenario.id}</span>
               </div>
               <dl className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
                 {[
-                  { label: 'Type', value: 'Modern Villa' },
-                  { label: 'Location', value: 'Phoenix, AZ, USA' },
-                  { label: 'Orientation', value: '165° SSE', accent: true },
-                  { label: 'Gross Area', value: '185,000 sq ft' },
-                  { label: 'Window-Wall', value: '58% WWR' },
-                  { label: 'Construction', value: 'Reinf. Concrete' },
+                  { label: 'Name', value: activeScenario.name },
+                  { label: 'Location', value: `${activeScenario.location.city}, ${activeScenario.location.state}` },
+                  { label: 'Orientation', value: `${activeScenario.orientationDegrees}°`, accent: true },
+                  { label: 'Gross Area', value: `${formatNumber(activeScenario.grossAreaSqFt)} sq ft` },
+                  { label: 'Floors', value: `${activeScenario.floorsCount} floors` },
+                  { label: 'Window-Wall', value: `${Math.round(activeScenario.windowToWallRatio * 100)}% WWR` },
+                  { label: 'Roof Type', value: activeScenario.roofType.replace(/_/g, ' ') },
+                  { label: 'Roof R-Val', value: `R-${activeScenario.roofRValue}` },
+                  { label: 'HVAC COP', value: `${activeScenario.hvacEfficiencyCOP} COP` },
+                  { label: 'Condition', value: activeScenario.conditionDescription },
                 ].map(({ label, value, accent }) => (
                   <div
                     key={label}
@@ -273,6 +268,7 @@ export const DigitalTwinConsole: React.FC = () => {
                           ? 'text-brand-600 dark:text-brand-400'
                           : 'text-gray-900 dark:text-white'
                         }`}
+                      title={value}
                     >
                       {value}
                     </span>
@@ -357,10 +353,10 @@ export const DigitalTwinConsole: React.FC = () => {
               </div>
               <dl className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
                 {[
-                  { label: 'Surface LST', value: '48.4 °C', color: 'text-rose-600 dark:text-rose-400' },
-                  { label: 'UHI Anomaly', value: '+4.8 °C', color: 'text-brand-600 dark:text-brand-400' },
-                  { label: 'Solar Irradiance', value: '880 W/m²', color: 'text-amber-600 dark:text-amber-400' },
-                  { label: 'Wind Speed', value: '3.4 m/s', color: 'text-sky-600 dark:text-sky-400' },
+                  { label: 'Surface LST', value: `${baselineHeatMap.averageLSTC} °C`, color: 'text-rose-600 dark:text-rose-400' },
+                  { label: 'Roof LST Peak', value: `${baselineHeatMap.peakLSTC} °C`, color: 'text-rose-600 dark:text-rose-400' },
+                  { label: 'UHI Anomaly', value: `+${activeThermalReport.urbanHeatIslandImpactDeltaC} °C`, color: 'text-brand-600 dark:text-brand-400' },
+                  { label: 'Solar Irradiance', value: `${Math.round(activeThermalReport.solarExposureRating * 115)} W/m²`, color: 'text-amber-600 dark:text-amber-400' },
                 ].map(({ label, value, color }) => (
                   <div
                     key={label}
@@ -428,7 +424,7 @@ export const DigitalTwinConsole: React.FC = () => {
                   </span>
                 </div>
                 <div>
-                  <span className="text-[9px] text-gray-500 dark:text-slate-400 block font-sans">Anomaly</span>
+                  <span className="text-[9px] text-gray-500 dark:text-slate-400 block font-sans">Envelope</span>
                   <span className="text-xs font-semibold text-brand-600 dark:text-brand-400">
                     {activeHotspot.anomaly}
                   </span>
@@ -482,7 +478,7 @@ export const DigitalTwinConsole: React.FC = () => {
                   BUILDING HEALTH
                 </span>
                 <Badge variant="rose" className="ml-auto text-[8px] py-0 px-1.5" pulse>
-                  {thermalReport.stressCategory}
+                  {activeThermalReport.stressCategory}
                 </Badge>
               </div>
 
@@ -494,7 +490,7 @@ export const DigitalTwinConsole: React.FC = () => {
                 </p>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-black font-mono text-rose-600 dark:text-rose-400 tracking-tight leading-none">
-                    {thermalReport.thermalStressScore}
+                    {activeThermalReport.thermalStressScore}
                   </span>
                   <span className="text-xs text-gray-400 dark:text-slate-500 font-mono">/ 100</span>
                   <span className={`text-xs font-bold ml-1 ${stressDisplay.color}`}>
@@ -505,7 +501,7 @@ export const DigitalTwinConsole: React.FC = () => {
                   <div className="relative h-1.5 rounded-full bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-600">
                     <div
                       className="absolute -top-1 w-3.5 h-3.5 rounded-full bg-white border-2 border-gray-800 dark:border-gray-200 shadow"
-                      style={{ left: `${Math.max(2, thermalReport.thermalStressScore - 2)}%` }}
+                      style={{ left: `${Math.max(2, activeThermalReport.thermalStressScore - 2)}%` }}
                     />
                   </div>
                   <div className="flex justify-between text-[9px] font-mono text-gray-400 dark:text-slate-500">
@@ -519,13 +515,13 @@ export const DigitalTwinConsole: React.FC = () => {
               <dl className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
                 <div className="p-2 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/70 dark:border-white/10 shadow-sm">
                   <span className="text-[9px] text-gray-500 dark:text-slate-400 block font-sans mb-0.5">Roof LST Peak</span>
-                  <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">56.8 °C</span>
+                  <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">{baselineHeatMap.peakLSTC} °C</span>
                   <span className="text-[8px] text-gray-400 dark:text-slate-500 block mt-0.5 font-sans">[FortyGuard]</span>
                 </div>
                 <div className="p-2 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/70 dark:border-white/10 shadow-sm">
                   <span className="text-[9px] text-gray-500 dark:text-slate-400 block font-sans mb-0.5">Facade Heat Gain</span>
                   <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">
-                    {thermalReport.facadeHeatGainKW} kW
+                    {activeThermalReport.facadeHeatGainKW} kW
                   </span>
                   <span className="text-[8px] text-gray-400 dark:text-slate-500 block mt-0.5 font-sans">[modeled]</span>
                 </div>
@@ -548,18 +544,21 @@ export const DigitalTwinConsole: React.FC = () => {
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/70 dark:border-white/10 shadow-sm">
                   <p className="text-[9px] text-gray-500 dark:text-slate-400 font-sans mb-0.5">Peak Cooling Demand</p>
                   <p className="text-lg font-black text-gray-900 dark:text-white">
-                    {DEFAULT_BUILDING_PROFILE.baselinePeakDemandKW.toLocaleString()} kW
+                    {formatNumber(activeBuilding.baselinePeakDemandKW)} kW
                     <span className="text-[9px] text-gray-400 dark:text-slate-500 font-sans ml-1">[modeled]</span>
                   </p>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/70 dark:border-white/10 shadow-sm">
                   <div className="flex justify-between mb-1">
-                    <span className="text-[9px] text-gray-500 dark:text-slate-400 font-sans">Cooling Load Waste</span>
-                    <span className="font-bold text-brand-600 dark:text-brand-400 font-mono">62%</span>
+                    <span className="text-[9px] text-gray-500 dark:text-slate-400 font-sans">Window-to-Wall Ratio</span>
+                    <span className="font-bold text-brand-600 dark:text-brand-400 font-mono">{Math.round(activeScenario.windowToWallRatio * 100)}%</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-brand-500 w-[62%]" />
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-brand-500"
+                      style={{ width: `${Math.round(activeScenario.windowToWallRatio * 100)}%` }}
+                    />
                   </div>
                 </div>
 
@@ -567,13 +566,13 @@ export const DigitalTwinConsole: React.FC = () => {
                   {[
                     {
                       label: 'Annual Deficit',
-                      value: `${formatCurrency(thermalReport.annualCoolingWasteCostUSD)}/yr`,
+                      value: `${formatCurrency(activeThermalReport.annualCoolingWasteCostUSD)}/yr`,
                       note: '[modeled]',
                       color: 'text-brand-600 dark:text-brand-400',
                     },
                     {
                       label: 'CO₂ Impact',
-                      value: `${thermalReport.carbonFootprintTonsCO2} t/yr`,
+                      value: `${activeThermalReport.carbonFootprintTonsCO2} t/yr`,
                       note: '[calc.]',
                       color: 'text-emerald-600 dark:text-emerald-400',
                     },

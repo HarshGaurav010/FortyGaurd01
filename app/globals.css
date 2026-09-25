@@ -377,3 +377,89 @@ html.dark .bg-grid {
     scroll-behavior: auto !important;
   }
 }
+
+/* ================================================================ */
+/* PRINT MEDIA STYLES — Dedicated Clean Paper Audit Formatting      */
+/* ================================================================ */
+@media print {
+  /* 1. Hide all application UI chrome and interactive buttons */
+  header,
+  nav,
+  footer,
+  aside,
+  .no-print,
+  [data-print-hide="true"] {
+    display: none !important;
+  }
+
+  /* 2. Color accuracy and paper optimization */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  /* 3. Strip page paddings that push content down on printed page */
+  .pt-28, .pb-20 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* 4. Page break controls */
+  .print-page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .print-avoid-break,
+  .glass-card,
+  table,
+  tr,
+  figure {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 5. Transform dark theme surfaces to crisp print styles */
+  .glass-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+  }
+
+  [class*="dark:bg-"] {
+    background-color: transparent !important;
+  }
+
+  [class*="dark:text-white"],
+  [class*="dark:text-slate-100"],
+  [class*="dark:text-slate-200"],
+  [class*="dark:text-slate-300"] {
+    color: #0f172a !important;
+  }
+
+  /* 6. Expand width for clean print margins */
+  .max-w-7xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+

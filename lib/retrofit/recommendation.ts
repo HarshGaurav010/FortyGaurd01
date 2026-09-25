@@ -5,6 +5,7 @@ import { FULL_RETROFIT_CATALOG } from './catalog';
 import { RETROFIT_UNIT_ASSUMPTIONS, CENTRAL_RETROFIT_ASSUMPTIONS } from './assumptions';
 import { computeRetrofitScore } from './ranking';
 import { calculateRetrofitROI } from '../calculations/roi';
+import { formatNumber } from '@/lib/utils/formatters';
 
 export class RetrofitRecommendationEngine {
   public generateRecommendations(
@@ -119,12 +120,12 @@ export class RetrofitRecommendationEngine {
         estimatedCostUSD: {
           min: minCost,
           max: maxCost,
-          formattedRange: `$${minCost.toLocaleString()} – $${maxCost.toLocaleString()}`,
+          formattedRange: `$${formatNumber(minCost)} – $${formatNumber(maxCost)}`,
         },
         estimatedAnnualSavingsUSD: {
           min: roiMax.annualMonetarySavingsUSD,
           max: roiMin.annualMonetarySavingsUSD,
-          formattedRange: `$${roiMax.annualMonetarySavingsUSD.toLocaleString()} – $${roiMin.annualMonetarySavingsUSD.toLocaleString()}/yr`,
+          formattedRange: `$${formatNumber(roiMax.annualMonetarySavingsUSD)} – $${formatNumber(roiMin.annualMonetarySavingsUSD)}/yr`,
         },
         estimatedPaybackYears: {
           min: roiMin.simplePaybackYears,
@@ -169,8 +170,8 @@ export class RetrofitRecommendationEngine {
       buildingId: building.id,
       totalSteps: topSteps.length,
       steps: topSteps,
-      totalRoadmapInvestment: `$${totalMinCost.toLocaleString()} – $${totalMaxCost.toLocaleString()}`,
-      totalRoadmapAnnualSavings: `$${totalMinSavings.toLocaleString()} – $${totalMaxSavings.toLocaleString()}/yr`,
+      totalRoadmapInvestment: `$${formatNumber(totalMinCost)} – $${formatNumber(totalMaxCost)}`,
+      totalRoadmapAnnualSavings: `$${formatNumber(totalMinSavings)} – $${formatNumber(totalMaxSavings)}/yr`,
       overallRoadmapPayback: `${avgPayback} years`,
     };
   }

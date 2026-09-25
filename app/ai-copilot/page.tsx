@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useBuildingScenario } from '@/components/scenarios/building-scenario-provider';
+import { getBaselineHeatMapForScenario } from '@/lib/demo/building-scenario-adapter';
+import { formatInteger } from '@/lib/utils/formatters';
 import {
   Bot,
   Send,
@@ -106,6 +109,22 @@ function renderBold(str: string): string {
 }
 
 export default function AICopilotPage() {
+  const { selectedScenario, buildingProfile, thermalReport } = useBuildingScenario();
+  const baselineHeatMap = useMemo(() => getBaselineHeatMapForScenario(selectedScenario), [selectedScenario]);
+
+  const topVulnerability = useMemo(() => {
+    if (!thermalReport?.vulnerabilities?.length) return { title: 'Envelope Heat Gain', severity: 'MEDIUM' };
+    const severityRank: Record<string, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+    const sortedVulns = [...thermalReport.vulnerabilities].sort((a, b) => {
+      const aSev = (buildingProfile.roofType === 'COOL_ROOF' && a.zone === 'ROOF') ? 1 : (severityRank[a.severity] || 0);
+      const bSev = (buildingProfile.roofType === 'COOL_ROOF' && b.zone === 'ROOF') ? 1 : (severityRank[b.severity] || 0);
+      const diff = bSev - aSev;
+      if (diff !== 0) return diff;
+      return b.heatGainContributionPct - a.heatGainContributionPct;
+    });
+    return sortedVulns[0] || thermalReport.vulnerabilities[0];
+  }, [thermalReport, buildingProfile]);
+
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -139,7 +158,11 @@ export default function AICopilotPage() {
       const res = await fetch('/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: text }),
+        body: JSON.stringify({
+          query: text,
+          scenarioId: selectedScenario.id,
+          buildingId: selectedScenario.id,
+        }),
       });
 
       if (!res.ok) {
@@ -194,6 +217,10 @@ export default function AICopilotPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-dot" />
                 ONLINE
               </span>
+              <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-brand-200 dark:border-brand-500/25 bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300 text-[11px] font-medium font-mono">
+                <Building2 className="w-3 h-3 text-brand-500" />
+                {selectedScenario.name} ({selectedScenario.location.city})
+              </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Ask Anything About Your Building
@@ -245,7 +272,7 @@ export default function AICopilotPage() {
                       </span>
                     </div>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Context: Desert Commerce Center (Phoenix, Arizona, USA)
+                      Context: {selectedScenario.name} ({selectedScenario.location.city}, {selectedScenario.location.state}, USA)
                     </span>
                   </div>
                 </div>
@@ -463,25 +490,37 @@ export default function AICopilotPage() {
               <div className="space-y-2.5">
                 <div className="flex justify-between items-center py-1 border-b border-dashed border-gray-200 dark:border-white/06">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px]">Building ID</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">BLD-PHX-2024-001</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{selectedScenario.id}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-dashed border-gray-200 dark:border-white/06">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px]">Peak Roof LST</span>
                   <span className="font-bold text-rose-500 flex items-center gap-1">
-                    <Thermometer className="w-3 h-3" /> 56.8°C
+                    <Thermometer className="w-3 h-3" /> {baselineHeatMap.peakLSTC}°C
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-dashed border-gray-200 dark:border-white/06">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px]">Thermal Stress</span>
-                  <span className="font-bold text-amber-500">84 / 100 (HIGH)</span>
+                  <span className={`font-bold ${
+                    thermalReport.thermalStressScore >= 70
+                      ? 'text-rose-500'
+                      : thermalReport.thermalStressScore >= 40
+                      ? 'text-amber-500'
+                      : 'text-emerald-500'
+                  }`}>
+                    {thermalReport.thermalStressScore} / 100 ({thermalReport.stressCategory})
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-dashed border-gray-200 dark:border-white/06">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px]">Top Vulnerability</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-[11px]">Uninsulated Dark Roof</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-[11px] truncate max-w-[190px]" title={topVulnerability.title}>
+                    {topVulnerability.title}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px]">Baseline Energy</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">3,840,000 kWh/yr</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                    {formatInteger(buildingProfile.baselineAnnualEnergykWh)} kWh/yr
+                  </span>
                 </div>
               </div>
 

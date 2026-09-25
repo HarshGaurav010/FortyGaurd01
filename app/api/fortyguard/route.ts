@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const lat = searchParams.get('lat') ? parseFloat(searchParams.get('lat')!) : 25.2048;
-    const lng = searchParams.get('lng') ? parseFloat(searchParams.get('lng')!) : 55.2708;
+    const lat = searchParams.get('lat') ? parseFloat(searchParams.get('lat')!) : 33.4484;
+    const lng = searchParams.get('lng') ? parseFloat(searchParams.get('lng')!) : -112.0740;
 
     const validated = FortyGuardQuerySchema.parse({ lat, lng });
     const result = await fortyGuardClient.getHeatMapData(validated.lat, validated.lng);

@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { GlassCard } from '@/components/ui/glass-card';
 import { DEFAULT_BUILDING_PROFILE, computeThermalStressReport } from '@/lib/models/building-thermal-model';
 import { CATALOG_RETROFITS } from '@/lib/calculations/thermal-stress-calculator';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { formatCurrency, formatNumber } from '@/lib/utils/formatters';
 
 // Lazy-load the 3D scene
 const OverviewHouseScene = lazy(() =>
@@ -267,7 +267,7 @@ export const Hero: React.FC = () => {
                     Peak Cooling Stress
                   </div>
                   <div className="text-2xl font-black text-gray-900 dark:text-white">
-                    {DEFAULT_BUILDING_PROFILE.baselinePeakDemandKW.toLocaleString()} kW
+                    {formatNumber(DEFAULT_BUILDING_PROFILE.baselinePeakDemandKW)} kW
                   </div>
                 </div>
 

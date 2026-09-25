@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DEFAULT_BUILDING_PROFILE, computeThermalStressReport } from '@/lib/models/building-thermal-model';
+import { getBuildingScenarioById } from '@/lib/demo/building-scenarios';
+import { scenarioToBuildingProfile } from '@/lib/demo/building-scenario-adapter';
 import { fortyGuardClient } from '@/lib/fortyguard/api-client';
 import { generateRetrofitRecommendations } from '@/lib/calculations/retrofit-engine';
 import { runWhatIfSimulation } from '@/lib/calculations/roi-calculator';
@@ -16,7 +18,8 @@ export async function POST(req: NextRequest) {
     const lng = validated.lng || DEFAULT_BUILDING_PROFILE.coordinates.lng;
 
     const heatMapResult = await fortyGuardClient.getHeatMapData(lat, lng);
-    const building = { ...DEFAULT_BUILDING_PROFILE };
+    const scenario = validated.buildingId ? getBuildingScenarioById(validated.buildingId) : null;
+    const building = scenario ? scenarioToBuildingProfile(scenario) : { ...DEFAULT_BUILDING_PROFILE };
 
     if (validated.address) {
       building.address = validated.address;

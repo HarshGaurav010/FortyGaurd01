@@ -100,22 +100,22 @@ export const CATALOG_RETROFITS: RetrofitIntervention[] = [
 ];
 
 export function getRecommendedRetrofits(building: BuildingProfile): RetrofitIntervention[] {
-  // Rank interventions according to building specific characteristics
+  // Rank interventions according to building specific characteristics without mutating global catalog
   return CATALOG_RETROFITS.map((item) => {
-    let costMultiplier = 1.0;
-    if (item.category === 'COOL_ROOF') {
-      item.estTotalCostUSD = Math.round(building.roofAreaSqFt * item.estCostPerSqFt);
-    } else if (item.category === 'WINDOW_FILM') {
+    const clone = { ...item };
+    if (clone.category === 'COOL_ROOF') {
+      clone.estTotalCostUSD = Math.round(building.roofAreaSqFt * clone.estCostPerSqFt);
+    } else if (clone.category === 'WINDOW_FILM') {
       const windowArea = building.grossAreaSqFt * building.windowToWallRatio * 0.4;
-      item.estTotalCostUSD = Math.round(windowArea * item.estCostPerSqFt);
-    } else if (item.category === 'SMART_HVAC') {
-      item.estTotalCostUSD = Math.round(building.grossAreaSqFt * item.estCostPerSqFt);
+      clone.estTotalCostUSD = Math.round(windowArea * clone.estCostPerSqFt);
+    } else if (clone.category === 'SMART_HVAC') {
+      clone.estTotalCostUSD = Math.round(building.grossAreaSqFt * clone.estCostPerSqFt);
     }
     
     // Recalculate annual savings
-    item.expectedAnnualSavingsUSD = Math.round((building.baselineAnnualEnergykWh * (item.expectedCoolingEnergyReductionPct / 100)) * 0.14);
-    item.paybackPeriodYears = Number((item.estTotalCostUSD / item.expectedAnnualSavingsUSD).toFixed(1));
-    item.roi20YearPct = Math.round(((item.expectedAnnualSavingsUSD * 20 - item.estTotalCostUSD) / item.estTotalCostUSD) * 100);
-    return item;
+    clone.expectedAnnualSavingsUSD = Math.round((building.baselineAnnualEnergykWh * (clone.expectedCoolingEnergyReductionPct / 100)) * 0.14);
+    clone.paybackPeriodYears = clone.expectedAnnualSavingsUSD > 0 ? Number((clone.estTotalCostUSD / clone.expectedAnnualSavingsUSD).toFixed(1)) : 0;
+    clone.roi20YearPct = clone.estTotalCostUSD > 0 ? Math.round(((clone.expectedAnnualSavingsUSD * 20 - clone.estTotalCostUSD) / clone.estTotalCostUSD) * 100) : 0;
+    return clone;
   }).sort((a, b) => a.paybackPeriodYears - b.paybackPeriodYears);
 }

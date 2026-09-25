@@ -7,20 +7,31 @@ import { MetricCard } from '@/components/ui/metric-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BuildingViewer } from '@/components/building/building-viewer';
-import { RetrofitCard } from '@/components/retrofit/retrofit-card';
-import { Search, Flame, ShieldCheck, Zap, DollarSign, Leaf, MapPin, AlertCircle, RefreshCw } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { Search, Flame, Zap, DollarSign, Leaf, MapPin, AlertCircle, RefreshCw } from 'lucide-react';
+import { formatCurrency, formatNumber } from '@/lib/utils/formatters';
 
 import { RetrofitRecommendationSection } from '@/components/retrofit/retrofit-recommendation';
 import { RetrofitRoadmapSection } from '@/components/retrofit/retrofit-roadmap';
 import { retrofitRecommendationEngine } from '@/lib/retrofit/recommendation';
-import { DEFAULT_BUILDING_PROFILE } from '@/lib/models/building-thermal-model';
+import {
+  useBuildingScenario,
+  useBuildingThermalModel,
+} from '@/components/scenarios/building-scenario-provider';
 
 export default function AnalysisPage() {
-  const [addressInput, setAddressInput] = useState('Desert Commerce Center, Phoenix, AZ, USA');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [latInput, setLatInput] = useState<number>(DEFAULT_BUILDING_PROFILE.coordinates.lat);
-  const [lngInput, setLngInput] = useState<number>(DEFAULT_BUILDING_PROFILE.coordinates.lng);
+  const { selectedScenario, buildingProfile, thermalReport } = useBuildingScenario();
+  const { building: modelBuilding, report: modelReport, scenario: modelScenario } = useBuildingThermalModel();
+
+  // Active sources of truth from existing scenario provider
+  const activeScenario = selectedScenario || modelScenario;
+  const activeBuilding = buildingProfile || modelBuilding;
+  const activeThermalReport = thermalReport || modelReport;
+
+  const [addressInput, setAddressInput] = useState(
+    () => `${activeScenario.name}, ${activeScenario.location.city}, ${activeScenario.location.state}`
+  );
+  const [latInput, setLatInput] = useState<number>(activeScenario.coordinates.lat);
+  const [lngInput, setLngInput] = useState<number>(activeScenario.coordinates.lng);
   const [filterType, setFilterType] = useState<1 | 2 | 3 | 4>(1);
   const [startDate, setStartDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState<string>('14:00');
@@ -30,6 +41,20 @@ export default function AnalysisPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingStage, setLoadingStage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Sync inputs with selected scenario changes while preserving user edits during steady state
+  useEffect(() => {
+    setAddressInput(`${activeScenario.name}, ${activeScenario.location.city}, ${activeScenario.location.state}`);
+    setLatInput(activeScenario.coordinates.lat);
+    setLngInput(activeScenario.coordinates.lng);
+  }, [
+    activeScenario.id,
+    activeScenario.name,
+    activeScenario.location.city,
+    activeScenario.location.state,
+    activeScenario.coordinates.lat,
+    activeScenario.coordinates.lng,
+  ]);
 
   const runAnalysis = useCallback(async () => {
     setLoading(true);
@@ -73,6 +98,7 @@ export default function AnalysisPage() {
           address: addressInput,
           lat: latInput,
           lng: lngInput,
+          buildingId: activeScenario.id,
         }),
       });
 
@@ -91,17 +117,19 @@ export default function AnalysisPage() {
       setLoading(false);
       setLoadingStage('');
     }
-  }, [addressInput, filterType, latInput, lngInput, startDate, startTime]);
+  }, [addressInput, filterType, latInput, lngInput, startDate, startTime, activeScenario.id]);
 
   useEffect(() => {
     runAnalysis();
   }, [runAnalysis]);
 
-  const recommendations = analysisData
-    ? retrofitRecommendationEngine.generateRecommendations(analysisData.building, analysisData.thermalReport, analysisData.heatMap)
-    : [];
+  const recommendations = retrofitRecommendationEngine.generateRecommendations(
+    activeBuilding,
+    activeThermalReport,
+    analysisData?.heatMap
+  );
 
-  const roadmap = analysisData ? retrofitRecommendationEngine.generateRoadmap(recommendations, analysisData.building) : null;
+  const roadmap = retrofitRecommendationEngine.generateRoadmap(recommendations, activeBuilding);
 
   return (
     <div className="pt-28 pb-20 bg-transparent min-h-screen">
@@ -173,6 +201,63 @@ export default function AnalysisPage() {
               </div>
             </div>
 
+            {/* Building Profile Information (Modeled Scenario Data) */}
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">
+                    {activeScenario.name}
+                  </span>
+                  <Badge variant="cyan" className="font-mono text-[10px]">
+                    {activeScenario.id}
+                  </Badge>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    {activeScenario.location.city}, {activeScenario.location.state}, {activeScenario.location.country}
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                    ({activeScenario.coordinates.lat.toFixed(4)}, {activeScenario.coordinates.lng.toFixed(4)})
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="slate" className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                    {activeScenario.conditionDescription}
+                  </Badge>
+                  <Badge variant="amber" className="text-[10px] font-mono font-semibold">
+                    MODELED SCENARIO DATA
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs font-mono">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-dark-950/80 border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Gross Floor Area</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{formatNumber(activeScenario.grossAreaSqFt)} sq ft</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-dark-950/80 border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Floors</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{activeScenario.floorsCount} floors</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-dark-950/80 border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Window-to-Wall</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{Math.round(activeScenario.windowToWallRatio * 100)}% WWR</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-dark-950/80 border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Roof Type</span>
+                  <span className="font-bold text-slate-900 dark:text-white truncate block" title={activeScenario.roofType}>
+                    {activeScenario.roofType.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-dark-950/80 border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Roof R-Value</span>
+                  <span className="font-bold text-slate-900 dark:text-white">R-{activeScenario.roofRValue}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-dark-950/80 border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">HVAC Efficiency</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{activeScenario.hvacEfficiencyCOP} COP</span>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800">
               <div className="text-xs text-slate-500 dark:text-slate-400 font-mono flex items-center gap-2">
                 <span>Granularity: 100m</span> • <span>Coverage: US Only</span>
@@ -208,13 +293,13 @@ export default function AnalysisPage() {
         )}
 
         {/* Analysis Results */}
-        {!loading && analysisData && (
+        {!loading && (
           <div className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
                 title="Thermal Stress Score"
-                value={`${analysisData.thermalReport.thermalStressScore}/100`}
-                subtext={analysisData.thermalReport.stressCategory}
+                value={`${activeThermalReport.thermalStressScore}/100`}
+                subtext={`${activeThermalReport.stressCategory} [modeled]`}
                 change="VULNERABILITY"
                 isPositive={false}
                 icon={<Flame className="w-5 h-5" />}
@@ -222,22 +307,22 @@ export default function AnalysisPage() {
               />
               <MetricCard
                 title="Annual Cooling Waste"
-                value={formatCurrency(analysisData.thermalReport.annualCoolingWasteCostUSD)}
-                subtext="Heat Gain Excess Cost"
+                value={formatCurrency(activeThermalReport.annualCoolingWasteCostUSD)}
+                subtext="Modeled Deficit [modeled]"
                 icon={<DollarSign className="w-5 h-5" />}
                 accentColor="amber"
               />
               <MetricCard
                 title="Facade Solar Exposure"
-                value={`${analysisData.thermalReport.solarExposureRating} / 10`}
-                subtext="South-East Orientation"
+                value={`${activeThermalReport.solarExposureRating} / 10`}
+                subtext={`${activeThermalReport.facadeHeatGainKW} kW Facade Gain [modeled]`}
                 icon={<Zap className="w-5 h-5" />}
                 accentColor="cyan"
               />
               <MetricCard
                 title="Carbon Footprint"
-                value={`${analysisData.thermalReport.carbonFootprintTonsCO2} t`}
-                subtext="CO₂e Annual Emissions"
+                value={`${activeThermalReport.carbonFootprintTonsCO2} t`}
+                subtext="CO₂e Annual Emissions [modeled]"
                 icon={<Leaf className="w-5 h-5" />}
                 accentColor="emerald"
               />
@@ -248,10 +333,35 @@ export default function AnalysisPage() {
                 <BuildingViewer />
               </div>
               <div className="lg:col-span-5 space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-wide">Identified Envelope Vulnerabilities</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-wide">
+                    Identified Envelope Vulnerabilities
+                  </h3>
+                  <Badge variant="slate" className="text-[10px] font-mono">
+                    MODELED ANALYSIS
+                  </Badge>
+                </div>
+
+                {/* Additional Modeled Metrics: Facade Heat Gain & Roof Heat Gain */}
+                <div className="grid grid-cols-2 gap-3 font-mono">
+                  <div className="p-3 rounded-2xl bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Facade Heat Gain</span>
+                    <span className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono">
+                      {activeThermalReport.facadeHeatGainKW} kW
+                    </span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 block">[modeled]</span>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Roof Heat Gain</span>
+                    <span className="text-lg font-bold text-rose-600 dark:text-rose-400 font-mono">
+                      {activeThermalReport.roofHeatGainKW} kW
+                    </span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 block">[modeled]</span>
+                  </div>
+                </div>
 
                 <div className="space-y-3">
-                  {analysisData.thermalReport.vulnerabilities.map((vuln, i) => (
+                  {activeThermalReport.vulnerabilities.map((vuln, i) => (
                     <GlassCard key={i} variant="interactive" className="p-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-slate-900 dark:text-white">{vuln.title}</span>
@@ -280,3 +390,4 @@ export default function AnalysisPage() {
     </div>
   );
 }
+

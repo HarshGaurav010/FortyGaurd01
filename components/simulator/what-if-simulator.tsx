@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useBuildingScenario } from '@/components/scenarios/building-scenario-provider';
+import { computeMultiRetrofitSimulation } from '@/lib/retrofit/simulation';
 import { RetrofitOptionId, MultiRetrofitSimulationResult } from '@/lib/retrofit/types';
 import { GlassCard } from '@/components/ui/glass-card';
 import { MetricCard } from '@/components/ui/metric-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AssumptionsPanel } from '@/components/retrofit/assumptions-panel';
-import { Sliders, RefreshCw, Zap, DollarSign, Calendar, ShieldCheck, SunMedium, Layers, Cpu, Sprout, ArrowRight, Activity, CheckSquare, Square } from 'lucide-react';
+import { Sliders, RefreshCw, Zap, DollarSign, Calendar, ShieldCheck, SunMedium, Layers, Cpu, Sprout, ArrowRight, Activity, CheckSquare, Square, Building2 } from 'lucide-react';
 import { formatCurrency, formatEnergy } from '@/lib/utils/formatters';
 
 interface RetrofitChoice {
@@ -27,36 +29,20 @@ const RETROFIT_CHOICES: RetrofitChoice[] = [
 ];
 
 export const WhatIfSimulator: React.FC = () => {
+  const { selectedScenario, buildingProfile, thermalReport } = useBuildingScenario();
   const [selectedIds, setSelectedIds] = useState<RetrofitOptionId[]>(['COOL_ROOF', 'SOLAR_GLAZING', 'HVAC_UPGRADE']);
-  const [simulation, setSimulation] = useState<MultiRetrofitSimulationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [userRate, setUserRate] = useState<number>(0.14);
 
-  const runSimulation = useCallback(async (ids: RetrofitOptionId[]) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/retrofits/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          selectedRetrofitIds: ids,
-          userElectricityRateUSD: userRate,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSimulation(data.simulation);
-      }
-    } catch (err) {
-      console.error('Failed to run simulation:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [userRate]);
-
-  useEffect(() => {
-    runSimulation(selectedIds);
-  }, [runSimulation, selectedIds]);
+  // Compute simulation directly from the selected scenario pipeline
+  const simulation = useMemo(() => {
+    return computeMultiRetrofitSimulation(
+      buildingProfile,
+      thermalReport,
+      selectedIds,
+      userRate
+    );
+  }, [buildingProfile, thermalReport, selectedIds, userRate]);
 
   const toggleRetrofit = (id: RetrofitOptionId) => {
     setSelectedIds((prev) =>
@@ -65,7 +51,10 @@ export const WhatIfSimulator: React.FC = () => {
   };
 
   const handleSimulateClick = () => {
-    runSimulation(selectedIds);
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 200);
   };
 
   return (
@@ -82,7 +71,11 @@ export const WhatIfSimulator: React.FC = () => {
               Select combinations of building retrofits to simulate compound thermal stress reduction & portfolio ROI.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#132039] border border-gray-200 dark:border-white/10 text-xs font-mono text-gray-700 dark:text-gray-300 shadow-sm">
+              <Building2 className="w-3.5 h-3.5 text-cyan-500" />
+              {selectedScenario.name} — {selectedScenario.location.city}, {selectedScenario.location.state}
+            </span>
             <Button
               variant="outline"
               size="sm"
@@ -90,7 +83,6 @@ export const WhatIfSimulator: React.FC = () => {
               onClick={() => {
                 const defaults: RetrofitOptionId[] = ['COOL_ROOF', 'SOLAR_GLAZING'];
                 setSelectedIds(defaults);
-                runSimulation(defaults);
               }}
             >
               Reset Defaults

@@ -21,6 +21,7 @@ export interface BuildingProfile {
   orientationDegrees: number; // 0 = North, 90 = East, 180 = South, 270 = West
   roofType: RoofType;
   roofAreaSqFt: number;
+  roofRValue?: number;
   windowToWallRatio: number; // 0.1 to 0.8
   windowType: WindowType;
   wallInsulationRValue: number;

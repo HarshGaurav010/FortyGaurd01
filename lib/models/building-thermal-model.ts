@@ -1,26 +1,8 @@
 import { BuildingProfile, BuildingThermalStressReport } from '@/types/building';
 import { FortyGuardHeatMap } from '@/types/fortyguard';
+import { DEMO_BUILDING_SCENARIOS } from '@/lib/demo/building-scenarios';
 
-export const DEFAULT_BUILDING_PROFILE: BuildingProfile = {
-  id: 'BLD-PHX-2024-001',
-  name: 'Desert Commerce Center',
-  address: 'E Camelback Rd, Phoenix, Arizona, USA',
-  coordinates: { lat: 33.4484, lng: -112.0740 },
-  useType: 'COMMERCIAL_OFFICE',
-  grossAreaSqFt: 185000,
-  floorsCount: 16,
-  yearBuilt: 2008,
-  orientationDegrees: 165, // Facing SSE - high solar heat load
-  roofType: 'STANDARD_MEMBRANE',
-  roofAreaSqFt: 14200,
-  windowToWallRatio: 0.58,
-  windowType: 'DOUBLE_STANDARD',
-  wallInsulationRValue: 8.5,
-  hvacAgeYears: 14,
-  hvacEfficiencyCOP: 2.7,
-  baselineAnnualEnergykWh: 3840000, // 20.75 kWh/sqft/yr cooling demand
-  baselinePeakDemandKW: 1250,
-};
+export const DEFAULT_BUILDING_PROFILE: BuildingProfile = DEMO_BUILDING_SCENARIOS[0];
 
 export function computeThermalStressReport(
   building: BuildingProfile,
@@ -66,19 +48,19 @@ export function computeThermalStressReport(
         title: 'Uninsulated Dark Roof Membrane',
         description: `Roof LST reaches ${roofLST}°C under peak solar load, causing severe heat absorption into top 3 floors.`,
         heatGainContributionPct: 38,
-        severity: 'CRITICAL',
+        severity: roofLST > 50 ? 'CRITICAL' : roofLST > 42 ? 'HIGH' : 'MEDIUM',
       },
       {
         zone: 'SOUTH_FACADE',
         title: 'High SHGC Double Glazing',
-        description: `South & South-East facades receive ${Math.round(880 * solarFactor)} W/m² solar load with 0.58 window-to-wall ratio.`,
+        description: `South & South-East facades receive ${Math.round(880 * solarFactor)} W/m² solar load with ${Math.round(building.windowToWallRatio * 100)}% window-to-wall ratio.`,
         heatGainContributionPct: 32,
         severity: 'HIGH',
       },
       {
         zone: 'HVAC',
-        title: 'Degraded HVAC Efficiency (COP 2.7)',
-        description: 'Chillers are 14 years old, consuming 34% excess electricity to meet peak heat rejection demands.',
+        title: `Degraded HVAC Efficiency (COP ${building.hvacEfficiencyCOP})`,
+        description: `Chillers are ${building.hvacAgeYears} years old, consuming 34% excess electricity to meet peak heat rejection demands.`,
         heatGainContributionPct: 18,
         severity: 'HIGH',
       },

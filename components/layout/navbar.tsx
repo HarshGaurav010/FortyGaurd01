@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Flame, Menu, X, Sun, Moon, ArrowRight } from 'lucide-react';
 import { useTheme } from '@/components/providers/theme-provider';
+import { BuildingScenarioSelector } from '@/components/scenarios/building-scenario-selector';
 
 const NAV_LINKS = [
   { label: 'Overview', href: '/', id: 'overview' },
@@ -57,41 +58,41 @@ export function Navbar() {
       <header
         className={`
           fixed top-0 left-0 right-0 z-50
-          flex items-center justify-between
-          px-4 sm:px-6 lg:px-8
+          flex items-center justify-center
+          px-3 sm:px-4 lg:px-6
           transition-all duration-300
-          ${scrolled ? 'py-2.5' : 'py-4'}
+          ${scrolled ? 'py-2' : 'py-3'}
         `}
         role="banner"
       >
         <div
           className={`
-            w-full max-w-[1400px] mx-auto
-            flex items-center justify-between
-            px-4 sm:px-5
+            w-full max-w-[1440px] mx-auto
+            flex items-center justify-between gap-1.5 lg:gap-2 xl:gap-3
+            px-3 sm:px-4
             rounded-2xl border
             backdrop-blur-xl
             transition-all duration-300
             ${scrolled
-              ? 'py-2.5 bg-white/90 dark:bg-[#0c1220]/90 border-gray-200/80 dark:border-white/10 shadow-navbar'
-              : 'py-3   bg-white/80 dark:bg-[#0c1220]/70 border-gray-200/60 dark:border-white/07 shadow-sm'
+              ? 'py-2 bg-white/90 dark:bg-[#0c1220]/90 border-gray-200/80 dark:border-white/10 shadow-navbar'
+              : 'py-2.5 bg-white/80 dark:bg-[#0c1220]/70 border-gray-200/60 dark:border-white/07 shadow-sm'
             }
           `}
         >
           {/* ── Left — Logo ─────────────────────────────────────── */}
           <Link
             href="/"
-            className="flex items-center gap-2.5 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-lg"
+            className="flex items-center gap-2.5 shrink-0 mr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-lg"
             aria-label="HeatRetrofit AI — Home"
           >
             <div className="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center shrink-0 shadow-sm">
               <Flame className="w-4 h-4 text-white" aria-hidden />
             </div>
-            <div className="leading-none">
-              <div className="text-sm font-bold text-gray-900 dark:text-white tracking-tight">
+            <div className="leading-none hidden sm:block">
+              <div className="text-sm font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">
                 HEATRETROFIT <span className="text-brand-500">AI</span>
               </div>
-              <div className="text-[9px] font-medium text-gray-400 dark:text-gray-500 tracking-widest uppercase">
+              <div className="text-[9px] font-medium text-gray-400 dark:text-gray-500 tracking-widest uppercase whitespace-nowrap hidden 2xl:block">
                 FortyGuard Microclimate
               </div>
             </div>
@@ -99,7 +100,7 @@ export function Navbar() {
 
           {/* ── Center — Navigation (desktop) ───────────────────── */}
           <nav
-            className="hidden lg:flex items-center gap-0.5"
+            className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-0.5 xl:gap-1 px-1"
             aria-label="Primary navigation"
           >
             {NAV_LINKS.map((link) => (
@@ -107,11 +108,11 @@ export function Navbar() {
                 key={link.id}
                 href={link.href}
                 className={`
-                  px-3.5 py-2 rounded-xl text-sm font-medium
+                  px-1.5 xl:px-2 py-1.5 rounded-xl text-[11px] xl:text-xs font-medium whitespace-nowrap
                   transition-all duration-150
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500
                   ${isActive(link.href)
-                    ? 'bg-brand-50 dark:bg-brand-500/12 text-brand-600 dark:text-brand-400'
+                    ? 'bg-brand-50 dark:bg-brand-500/12 text-brand-600 dark:text-brand-400 font-semibold'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/80 dark:hover:bg-white/06'
                   }
                 `}
@@ -122,10 +123,13 @@ export function Navbar() {
           </nav>
 
           {/* ── Right — Controls ────────────────────────────────── */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 xl:gap-2 shrink-0">
+            {/* Scenario Selector */}
+            <BuildingScenarioSelector className="hidden sm:inline-flex" />
+
             {/* FG-LIVE status */}
-            <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold tracking-wider font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-dot" />
+            <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold tracking-wider font-mono shrink-0 whitespace-nowrap">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-dot shrink-0" />
               FG-LIVE
             </span>
 
@@ -135,10 +139,10 @@ export function Navbar() {
             {/* CTA */}
             <Link
               href="/analysis"
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold shadow-sm hover:shadow-glow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+              className="hidden sm:inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-full bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold whitespace-nowrap shrink-0 shadow-sm hover:shadow-glow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 min-w-[140px]"
             >
-              Analyze Building
-              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+              <span className="whitespace-nowrap">Analyze Building</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             </Link>
 
             {/* Mobile menu toggle */}

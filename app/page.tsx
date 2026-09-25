@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +10,12 @@ import { CTASection } from '@/components/home/cta-section';
 import { ScrollReveal } from '@/components/providers/scroll-reveal';
 import { OverviewDigitalTwinPreview } from '@/components/digital-twin/overview-digital-twin-preview';
 import { CATALOG_RETROFITS } from '@/lib/calculations/thermal-stress-calculator';
-import { DEFAULT_BUILDING_PROFILE, computeThermalStressReport } from '@/lib/models/building-thermal-model';
+import {
+  useBuildingScenario,
+  useBuildingThermalModel,
+} from '@/components/scenarios/building-scenario-provider';
+import { getBaselineHeatMapForScenario } from '@/lib/demo/building-scenario-adapter';
+import { formatNumber } from '@/lib/utils/formatters';
 import {
   Flame,
   ArrowRight,
@@ -17,30 +24,21 @@ import {
   TrendingDown,
   Leaf,
   Sun,
-  Shield,
-  AlertTriangle,
   Box,
   Bot,
   Layers,
   BarChart3,
 } from 'lucide-react';
 
-// ── Shared consistent heatmap for all Overview calculations ──
-const OVERVIEW_HEATMAP = {
-  regionId: 'FG-PHX-001',
-  regionName: 'Downtown Phoenix',
-  center: DEFAULT_BUILDING_PROFILE.coordinates,
-  gridResolutionMeters: 2.0,
-  averageLSTC: 48.4,
-  peakLSTC: 56.8,
-  heatStressScore: 33,
-  thermalHotspots: [],
-  points: [],
-};
-
 export default function HomePage() {
-  // Compute consistently from the real formula (produces 33)
-  const thermalReport = computeThermalStressReport(DEFAULT_BUILDING_PROFILE, OVERVIEW_HEATMAP);
+  const { selectedScenario, buildingProfile, thermalReport: scenarioThermalReport } = useBuildingScenario();
+  const { building: modelBuilding, report: modelReport, scenario: modelScenario } = useBuildingThermalModel();
+
+  const activeScenario = selectedScenario || modelScenario;
+  const activeBuilding = buildingProfile || modelBuilding;
+  const activeThermalReport = scenarioThermalReport || modelReport;
+  const baselineHeatMap = getBaselineHeatMapForScenario(activeScenario);
+
   const top3 = CATALOG_RETROFITS.slice(0, 3);
 
   return (
@@ -76,10 +74,10 @@ export default function HomePage() {
               {/* Key Stats Row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
                 {[
-                  { label: 'Avg Surface LST', value: '48.4 °C', sub: 'FortyGuard telemetry', color: 'text-rose-600 dark:text-rose-400' },
-                  { label: 'Peak Roof LST', value: '56.8 °C', sub: 'Satellite measured', color: 'text-rose-600 dark:text-rose-400' },
-                  { label: 'Thermal Stress', value: `${thermalReport.thermalStressScore}/100`, sub: 'Modeled score', color: 'text-amber-600 dark:text-amber-400' },
-                  { label: 'UHI Anomaly', value: `+${thermalReport.urbanHeatIslandImpactDeltaC} °C`, sub: 'Urban heat island', color: 'text-brand-600 dark:text-brand-400' },
+                  { label: 'Avg Surface LST', value: `${baselineHeatMap.averageLSTC} °C`, sub: 'FortyGuard baseline', color: 'text-rose-600 dark:text-rose-400' },
+                  { label: 'Peak Roof LST', value: `${baselineHeatMap.peakLSTC} °C`, sub: 'Modeled peak', color: 'text-rose-600 dark:text-rose-400' },
+                  { label: 'Thermal Stress', value: `${activeThermalReport.thermalStressScore}/100`, sub: `${activeThermalReport.stressCategory} [modeled]`, color: 'text-amber-600 dark:text-amber-400' },
+                  { label: 'UHI Anomaly', value: `+${activeThermalReport.urbanHeatIslandImpactDeltaC} °C`, sub: 'Urban heat island', color: 'text-brand-600 dark:text-brand-400' },
                 ].map(({ label, value, sub, color }) => (
                   <div key={label} className="p-3 rounded-2xl bg-white/90 dark:bg-[#0c1426] border border-gray-200/80 dark:border-white/10 shadow-sm">
                     <p className="text-[10px] text-gray-500 dark:text-slate-400 font-mono uppercase tracking-wider">{label}</p>
@@ -106,7 +104,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: Subtle Architectural / Thermal Blueprint Schematic Card */}
+            {/* Right: Architectural / Thermal Blueprint Schematic Card */}
             <div className="lg:col-span-5 w-full">
               <div className="relative rounded-3xl p-5 border border-gray-200/80 dark:border-white/10 bg-white/90 dark:bg-[#09101f]/95 backdrop-blur-xl shadow-card space-y-4">
                 {/* Header Strip */}
@@ -116,7 +114,7 @@ export default function HomePage() {
                     <span className="font-bold text-gray-900 dark:text-white text-[11px]">THERMAL ENVELOPE AUDIT</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/08 text-[10px] text-gray-500 dark:text-slate-400">
-                    PHX-2024 · 165° SSE
+                    {activeScenario.id} · {activeScenario.orientationDegrees}°
                   </span>
                 </div>
 
@@ -139,21 +137,21 @@ export default function HomePage() {
                   <div className="relative z-10 flex items-start justify-between text-[10px] font-mono">
                     <div className="p-1.5 rounded-lg bg-white/95 dark:bg-[#0c162b]/95 border border-rose-500/40 shadow-sm">
                       <span className="block text-[8px] uppercase text-rose-500 font-bold">Roof Hotspot</span>
-                      <span className="font-bold text-gray-900 dark:text-white">56.8 °C LST</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{baselineHeatMap.peakLSTC} °C LST</span>
                     </div>
                     <div className="p-1.5 rounded-lg bg-white/95 dark:bg-[#0c162b]/95 border border-amber-500/40 shadow-sm">
-                      <span className="block text-[8px] uppercase text-amber-500 font-bold">Solar Gain</span>
-                      <span className="font-bold text-gray-900 dark:text-white">880 W/m²</span>
+                      <span className="block text-[8px] uppercase text-amber-500 font-bold">Facade Gain</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{activeThermalReport.facadeHeatGainKW} kW</span>
                     </div>
                   </div>
 
                   <div className="relative z-10 flex items-end justify-between text-[10px] font-mono">
                     <div className="p-1.5 rounded-lg bg-white/95 dark:bg-[#0c162b]/95 border border-sky-500/40 shadow-sm">
-                      <span className="block text-[8px] uppercase text-sky-500 font-bold">Insulation Gap</span>
-                      <span className="font-bold text-gray-900 dark:text-white">R-8.5 Wall</span>
+                      <span className="block text-[8px] uppercase text-sky-500 font-bold">Roof Rating</span>
+                      <span className="font-bold text-gray-900 dark:text-white">R-{activeScenario.roofRValue} {activeScenario.roofType === 'COOL_ROOF' ? 'Cool Roof' : 'Roof'}</span>
                     </div>
                     <div className="px-2 py-1 rounded-lg bg-gray-900/80 dark:bg-black/60 text-white text-[9px]">
-                      FortyGuard 1.5m² Grid
+                      FortyGuard {activeScenario.location.city}
                     </div>
                   </div>
                 </div>
@@ -162,21 +160,21 @@ export default function HomePage() {
                 <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
                   <div className="p-2 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/70 dark:border-white/10">
                     <p className="text-[9px] text-gray-500 dark:text-slate-400 font-sans">Cooling Deficit</p>
-                    <p className="text-xs font-black text-brand-600 dark:text-brand-400">$148k/yr</p>
+                    <p className="text-xs font-black text-brand-600 dark:text-brand-400">${Math.round(activeThermalReport.annualCoolingWasteCostUSD / 1000)}k/yr</p>
                   </div>
                   <div className="p-2 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/70 dark:border-white/10">
-                    <p className="text-[9px] text-gray-500 dark:text-slate-400 font-sans">Waste Ratio</p>
-                    <p className="text-xs font-black text-amber-600 dark:text-amber-400">62%</p>
+                    <p className="text-[9px] text-gray-500 dark:text-slate-400 font-sans">Window-Wall</p>
+                    <p className="text-xs font-black text-amber-600 dark:text-amber-400">{Math.round(activeScenario.windowToWallRatio * 100)}% WWR</p>
                   </div>
                   <div className="p-2 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/70 dark:border-white/10">
-                    <p className="text-[9px] text-gray-500 dark:text-slate-400 font-sans">Top Payback</p>
-                    <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">1.6 yrs</p>
+                    <p className="text-[9px] text-gray-500 dark:text-slate-400 font-sans">HVAC COP</p>
+                    <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">{activeScenario.hvacEfficiencyCOP} COP</p>
                   </div>
                 </div>
 
                 {/* Footer link to Digital Twin */}
                 <div className="pt-2 border-t border-gray-100 dark:border-white/08 flex items-center justify-between">
-                  <span className="text-[11px] text-gray-500 dark:text-slate-400">Desert Commerce Center model</span>
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400">{activeScenario.name} model</span>
                   <Link
                     href="/digital-twin"
                     className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-500 transition-colors"
@@ -200,10 +198,10 @@ export default function HomePage() {
               <div className="space-y-1.5">
                 <Badge variant="rose">BUILDING HEALTH ASSESSMENT</Badge>
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-                  Desert Commerce Center — Phoenix, Arizona, USA
+                  {activeScenario.name} — {activeScenario.location.city}, {activeScenario.location.state}, {activeScenario.location.country}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-                  FortyGuard heat data · Building thermal model · Modeled analysis
+                  {activeScenario.id} · {formatNumber(activeScenario.grossAreaSqFt)} sq ft · {activeScenario.floorsCount} floors · {activeScenario.conditionDescription}
                 </p>
               </div>
               <Link href="/analysis">
@@ -218,15 +216,15 @@ export default function HomePage() {
                 {
                   icon: <Thermometer className="w-4 h-4 text-rose-500" />,
                   label: 'Thermal Stress Index',
-                  value: `${thermalReport.thermalStressScore}/100`,
-                  sub: `${thermalReport.stressCategory} — Modeled`,
+                  value: `${activeThermalReport.thermalStressScore}/100`,
+                  sub: `${activeThermalReport.stressCategory} — Modeled`,
                   bg: 'bg-rose-50 dark:bg-rose-500/08 border-rose-200/80 dark:border-rose-500/25',
                   valueColor: 'text-rose-600 dark:text-rose-400',
                 },
                 {
                   icon: <Zap className="w-4 h-4 text-brand-500" />,
                   label: 'Peak Cooling Demand',
-                  value: `${DEFAULT_BUILDING_PROFILE.baselinePeakDemandKW.toLocaleString()} kW`,
+                  value: `${formatNumber(activeBuilding.baselinePeakDemandKW)} kW`,
                   sub: 'Modeled baseline',
                   bg: 'bg-white dark:bg-[#0c1426] border-gray-200/80 dark:border-white/10',
                   valueColor: 'text-gray-900 dark:text-white',
@@ -234,15 +232,15 @@ export default function HomePage() {
                 {
                   icon: <TrendingDown className="w-4 h-4 text-amber-500" />,
                   label: 'Cooling Load Waste',
-                  value: '62%',
-                  sub: 'Of total HVAC energy',
+                  value: `${Math.round(activeScenario.windowToWallRatio * 100)}% WWR`,
+                  sub: `${activeScenario.roofType.replace(/_/g, ' ')} · R-${activeScenario.roofRValue}`,
                   bg: 'bg-amber-50 dark:bg-amber-500/08 border-amber-200/80 dark:border-amber-500/25',
                   valueColor: 'text-amber-600 dark:text-amber-400',
                 },
                 {
                   icon: <Flame className="w-4 h-4 text-brand-500" />,
                   label: 'Modeled Annual Deficit',
-                  value: `$${Math.round(thermalReport.annualCoolingWasteCostUSD / 1000)}k/yr`,
+                  value: `$${Math.round(activeThermalReport.annualCoolingWasteCostUSD / 1000)}k/yr`,
                   sub: 'Energy cost waste — est.',
                   bg: 'bg-white dark:bg-[#0c1426] border-gray-200/80 dark:border-white/10',
                   valueColor: 'text-brand-600 dark:text-brand-400',
@@ -250,7 +248,7 @@ export default function HomePage() {
                 {
                   icon: <Leaf className="w-4 h-4 text-emerald-500" />,
                   label: 'Annual CO₂',
-                  value: `${thermalReport.carbonFootprintTonsCO2} t`,
+                  value: `${activeThermalReport.carbonFootprintTonsCO2} t`,
                   sub: 'Carbon impact — calc.',
                   bg: 'bg-emerald-50 dark:bg-emerald-500/08 border-emerald-200/80 dark:border-emerald-500/25',
                   valueColor: 'text-emerald-600 dark:text-emerald-400',
@@ -293,34 +291,40 @@ export default function HomePage() {
                 {
                   zone: 'Roof Membrane',
                   icon: <Sun className="w-5 h-5 text-rose-500" />,
-                  severity: 'CRITICAL',
-                  severityColor: 'text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10',
-                  metric: '56.8 °C',
-                  metricLabel: 'Peak Surface LST',
+                  severity: activeThermalReport.thermalStressScore > 50 ? 'CRITICAL' : 'MODERATE',
+                  severityColor: activeThermalReport.thermalStressScore > 50
+                    ? 'text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10'
+                    : 'text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10',
+                  metric: `${baselineHeatMap.peakLSTC} °C`,
+                  metricLabel: 'Peak Roof LST',
                   contribution: '38%',
-                  description: 'Black bitumen waterproofing membrane absorbs 88% of solar radiation. Peak roof temperature reaches 56.8°C under full sun, driving severe heat gain into the top 3 floors.',
-                  source: '[FortyGuard measured]',
+                  description: `${activeScenario.roofType.replace(/_/g, ' ')} with R-${activeScenario.roofRValue} insulation. Peak roof temperature reaches ${baselineHeatMap.peakLSTC}°C, contributing ${formatNumber(activeThermalReport.roofHeatGainKW)} kW heat gain.`,
+                  source: '[FortyGuard baseline]',
                 },
                 {
-                  zone: 'South-East Glazing',
+                  zone: 'Glazing & Facade',
                   icon: <Sun className="w-5 h-5 text-amber-500" />,
-                  severity: 'HIGH',
-                  severityColor: 'text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10',
-                  metric: '880 W/m²',
-                  metricLabel: 'Peak Solar Irradiance',
+                  severity: activeScenario.windowToWallRatio > 0.4 ? 'HIGH' : 'OPTIMAL',
+                  severityColor: activeScenario.windowToWallRatio > 0.4
+                    ? 'text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10'
+                    : 'text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10',
+                  metric: `${formatNumber(activeThermalReport.facadeHeatGainKW)} kW`,
+                  metricLabel: 'Facade Heat Gain',
                   contribution: '32%',
-                  description: '58% window-to-wall ratio facing 165° SSE means perimeter offices receive near-peak direct solar load during working hours, creating glare and radiant discomfort.',
-                  source: '[FortyGuard solar data]',
+                  description: `${Math.round(activeScenario.windowToWallRatio * 100)}% window-to-wall ratio facing ${activeScenario.orientationDegrees}° orientation creates substantial perimeter solar heat load in ${activeScenario.location.city}.`,
+                  source: '[Modeled solar exposure]',
                 },
                 {
-                  zone: 'Envelope Insulation',
+                  zone: 'HVAC & Envelope',
                   icon: <Layers className="w-5 h-5 text-blue-500" />,
-                  severity: 'HIGH',
-                  severityColor: 'text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10',
-                  metric: 'R-8.5',
-                  metricLabel: 'Wall Thermal Resistance',
+                  severity: activeScenario.hvacEfficiencyCOP < 3.5 ? 'HIGH' : 'OPTIMAL',
+                  severityColor: activeScenario.hvacEfficiencyCOP < 3.5
+                    ? 'text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10'
+                    : 'text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10',
+                  metric: `${activeScenario.hvacEfficiencyCOP} COP`,
+                  metricLabel: 'HVAC Efficiency',
                   contribution: '18%',
-                  description: 'Perimeter concrete frame creates thermal bridging across column connections. Current R-8.5 wall insulation is well below ASHRAE 90.1 targets for hot-dry climate zones.',
+                  description: `Building HVAC system is ${activeScenario.hvacAgeYears} years old with COP of ${activeScenario.hvacEfficiencyCOP} and envelope rating of R-${activeScenario.roofRValue}.`,
                   source: '[Building specs — modeled]',
                 },
               ].map(({ zone, icon, severity, severityColor, metric, metricLabel, contribution, description, source }) => (
@@ -377,7 +381,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {top3.map((r, i) => (
+              {top3.map((r) => (
                 <GlassCard key={r.id} variant="interactive" className="p-5 space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-brand-500 text-white text-xs font-black flex items-center justify-center shrink-0">
@@ -428,7 +432,7 @@ export default function HomePage() {
                   Building Digital Twin
                 </h2>
                 <p className="text-[10px] text-gray-500 font-mono mb-2">
-                  Interactive 3D visualization of Desert Commerce Center with live FortyGuard thermal overlays
+                  Interactive 3D visualization of {activeScenario.name} ({activeScenario.location.city}, {activeScenario.location.state}) with FortyGuard thermal overlays
                 </p>
               </div>
               <Link href="/digital-twin">

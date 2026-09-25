@@ -1,6 +1,8 @@
 import { ChatMessage } from '@/types/chatbot';
 import { BuildingProfile } from '@/types/building';
 import { FortyGuardHeatMap } from '@/types/fortyguard';
+import { getBuildingScenarioById } from '@/lib/demo/building-scenarios';
+import { getBaselineHeatMapForScenario } from '@/lib/demo/building-scenario-adapter';
 import { heatRetrofitTools } from './tools';
 import { CopilotToolResult } from './types';
 
@@ -36,7 +38,10 @@ export class CopilotEngine {
       baselinePeakDemandKW: 1250,
     };
 
-    const heatMap: FortyGuardHeatMap = heatMapData || {
+    const matchedScenario = building ? getBuildingScenarioById(building.id) : undefined;
+    const defaultHeatMap = matchedScenario ? getBaselineHeatMapForScenario(matchedScenario) : undefined;
+
+    const heatMap: FortyGuardHeatMap = heatMapData || defaultHeatMap || {
       regionId: 'FG-PHX-001',
       regionName: 'Downtown Phoenix',
       center: building.coordinates,

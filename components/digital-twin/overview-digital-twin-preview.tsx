@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, RefreshCw, Flame, Sun, Shield, Compass, ArrowRight } from 'lucide-react';
 import { OverviewHouseScene } from '@/components/building/overview-house-scene';
+import { useBuildingScenario } from '@/components/scenarios/building-scenario-provider';
 
 type LayerMode = 'heatmap' | 'solar' | 'retrofit' | 'baseline';
 
@@ -15,6 +16,7 @@ type LayerMode = 'heatmap' | 'solar' | 'retrofit' | 'baseline';
  * Provides basic layer switching and hotspot visibility toggle.
  */
 export const OverviewDigitalTwinPreview: React.FC = () => {
+  const { selectedScenario } = useBuildingScenario();
   const [viewMode, setViewMode] = useState<LayerMode>('heatmap');
   const [showHotspots, setShowHotspots] = useState(true);
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
@@ -90,9 +92,9 @@ export const OverviewDigitalTwinPreview: React.FC = () => {
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
               {viewMode === 'heatmap' && 'FortyGuard Land Surface Temperature · Thermal Stress Mode'}
-              {viewMode === 'solar' && 'Solar Irradiance · 880 W/m² at 165° SSE orientation'}
+              {viewMode === 'solar' && `Solar Irradiance · Facade orientation ${selectedScenario.orientationDegrees}°`}
               {viewMode === 'retrofit' && 'High-Albedo Cool Roof Coating (SRI 108) · Retrofit Mode'}
-              {viewMode === 'baseline' && 'Structural Blueprint · 16-Floor Commercial Building'}
+              {viewMode === 'baseline' && `Structural Blueprint · ${selectedScenario.floorsCount}-Floor ${selectedScenario.name}`}
             </p>
           </div>
           <Link href="/digital-twin">

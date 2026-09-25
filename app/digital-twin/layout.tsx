@@ -3,14 +3,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: '3D Digital Twin | HeatRetrofit AI',
   description:
-    'Immersive Building Management System console. Explore thermal stress, retrofit layers, and 24-hour microclimate dynamics on the Desert Commerce Center 3D digital twin.',
+    'Immersive Building Management System console. Explore thermal stress, retrofit layers, and 24-hour microclimate dynamics on the 3D digital twin.',
 };
 
 /**
  * Digital Twin route segment layout.
  *
  * The DigitalTwinConsole fills the entire viewport below the
- * global navbar using height: calc(100svh - 72px). We suppress
+ * global navbar using height: calc(100svh - 80px). We suppress
  * the global footer here by overflowing the body and hiding
  * content below the console via CSS. The overflow-hidden on the
  * root and a wrapper approach achieves this cleanly.

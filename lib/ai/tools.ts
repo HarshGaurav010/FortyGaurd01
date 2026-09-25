@@ -7,20 +7,20 @@ import { runWhatIfSimulation } from '@/lib/calculations/roi-calculator';
 import { CENTRAL_RETROFIT_ASSUMPTIONS } from '@/lib/retrofit/assumptions';
 import { FULL_RETROFIT_CATALOG } from '@/lib/retrofit/catalog';
 import { RetrofitOptionId } from '@/lib/retrofit/types';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { formatCurrency, formatInteger } from '@/lib/utils/formatters';
 import { CopilotToolResult } from './types';
 
 export class HeatRetrofitTools {
   public getBuildingProfile(building: BuildingProfile): CopilotToolResult {
     return {
       toolName: 'getBuildingProfile',
-      summaryText: `Building profile for **${building.name}**: ${building.grossAreaSqFt.toLocaleString()} sq ft ${building.useType.toLowerCase().replace('_', ' ')} built in ${building.yearBuilt} with ${building.floorsCount} floors and ${Math.round(building.windowToWallRatio * 100)}% glass facade exposure.`,
+      summaryText: `Building profile for **${building.name}**: ${formatInteger(building.grossAreaSqFt)} sq ft ${building.useType.toLowerCase().replace('_', ' ')} built in ${building.yearBuilt} with ${building.floorsCount} floors and ${Math.round(building.windowToWallRatio * 100)}% glass facade exposure.`,
       dataCard: {
         type: 'THERMAL_SCORE',
         title: `Building Baseline Specifications`,
         metrics: {
           'Building Name': building.name,
-          'Gross Footprint': `${building.grossAreaSqFt.toLocaleString()} sq ft`,
+          'Gross Footprint': `${formatInteger(building.grossAreaSqFt)} sq ft`,
           'Year Built': `${building.yearBuilt} (${building.floorsCount} Floors)`,
           'HVAC Efficiency': `COP ${building.hvacEfficiencyCOP} (${building.hvacAgeYears} yrs old)`,
         },
@@ -90,14 +90,14 @@ export class HeatRetrofitTools {
     const totalKW = report.facadeHeatGainKW + report.roofHeatGainKW;
     return {
       toolName: 'getCoolingStress',
-      summaryText: `Calculated cooling heat stress load is **${totalKW.toLocaleString()} kW** (${report.roofHeatGainKW.toLocaleString()} kW roof gain + ${report.facadeHeatGainKW.toLocaleString()} kW facade gain), causing **${formatCurrency(report.annualCoolingWasteCostUSD)}/year** in wasted HVAC electricity.`,
+      summaryText: `Calculated cooling heat stress load is **${formatInteger(totalKW)} kW** (${formatInteger(report.roofHeatGainKW)} kW roof gain + ${formatInteger(report.facadeHeatGainKW)} kW facade gain), causing **${formatCurrency(report.annualCoolingWasteCostUSD)}/year** in wasted HVAC electricity.`,
       dataCard: {
         type: 'THERMAL_SCORE',
         title: 'Cooling Load & Heat Gain Stress',
         metrics: {
-          'Roof Heat Gain': `${report.roofHeatGainKW.toLocaleString()} kW`,
-          'Facade Heat Gain': `${report.facadeHeatGainKW.toLocaleString()} kW`,
-          'Total Heat Gain Load': `${totalKW.toLocaleString()} kW`,
+          'Roof Heat Gain': `${formatInteger(report.roofHeatGainKW)} kW`,
+          'Facade Heat Gain': `${formatInteger(report.facadeHeatGainKW)} kW`,
+          'Total Heat Gain Load': `${formatInteger(totalKW)} kW`,
           'Annual Waste Cost': `${formatCurrency(report.annualCoolingWasteCostUSD)}/yr`,
         },
       },
@@ -107,7 +107,15 @@ export class HeatRetrofitTools {
 
   public getThermalWeaknesses(building: BuildingProfile, heatMap: FortyGuardHeatMap): CopilotToolResult {
     const report = computeThermalStressReport(building, heatMap);
-    const topVuln = report.vulnerabilities[0];
+    const severityRank: Record<string, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+    const sortedVulns = [...report.vulnerabilities].sort((a, b) => {
+      const aSev = (building.roofType === 'COOL_ROOF' && a.zone === 'ROOF') ? 1 : (severityRank[a.severity] || 0);
+      const bSev = (building.roofType === 'COOL_ROOF' && b.zone === 'ROOF') ? 1 : (severityRank[b.severity] || 0);
+      const diff = bSev - aSev;
+      if (diff !== 0) return diff;
+      return b.heatGainContributionPct - a.heatGainContributionPct;
+    });
+    const topVuln = sortedVulns[0] || report.vulnerabilities[0];
     return {
       toolName: 'getThermalWeaknesses',
       summaryText: `Identified envelope weaknesses: **${topVuln.title}** (${topVuln.severity} severity) accounts for **${topVuln.heatGainContributionPct}%** of total building cooling load. ${report.vulnerabilities.length} total vulnerability zones detected.`,
@@ -121,7 +129,7 @@ export class HeatRetrofitTools {
           'Severity Level': topVuln.severity,
         },
       },
-      rawData: report.vulnerabilities,
+      rawData: sortedVulns,
     };
   }
 
@@ -188,15 +196,15 @@ export class HeatRetrofitTools {
 
     return {
       toolName: 'calculateROI',
-      summaryText: `Calculated ROI for **$${retrofitCostUSD.toLocaleString()}** investment reducing cooling load by **${reductionPct}%**: Annual utility savings of **$${roi.annualMonetarySavingsUSD.toLocaleString()}/yr**, reaching simple payback in **${roi.simplePaybackYears} years** and a 20-year NPV of **$${roi.twentyYearNPVUSD.toLocaleString()}**.`,
+      summaryText: `Calculated ROI for **${formatCurrency(retrofitCostUSD)}** investment reducing cooling load by **${reductionPct}%**: Annual utility savings of **${formatCurrency(roi.annualMonetarySavingsUSD)}/yr**, reaching simple payback in **${roi.simplePaybackYears} years** and a 20-year NPV of **${formatCurrency(roi.twentyYearNPVUSD)}**.`,
       dataCard: {
         type: 'ROI_SUMMARY',
         title: 'Calculated Financial Return Summary',
         metrics: {
-          'Capital Investment': `$${retrofitCostUSD.toLocaleString()}`,
-          'Annual Monetary Savings': `$${roi.annualMonetarySavingsUSD.toLocaleString()}/yr`,
+          'Capital Investment': formatCurrency(retrofitCostUSD),
+          'Annual Monetary Savings': `${formatCurrency(roi.annualMonetarySavingsUSD)}/yr`,
           'Simple Payback': `${roi.simplePaybackYears} years`,
-          '20-Year NPV': `$${roi.twentyYearNPVUSD.toLocaleString()}`,
+          '20-Year NPV': formatCurrency(roi.twentyYearNPVUSD),
         },
       },
       rawData: roi,
@@ -216,14 +224,14 @@ export class HeatRetrofitTools {
 
     return {
       toolName: 'runRetrofitSimulation',
-      summaryText: `Scenario simulation for selected retrofits (**${selectedIds.join(', ')}**): Cuts cooling energy by **${sim.energySavedPct}%** (${sim.energySavedkWh.toLocaleString()} kWh/yr), saving **$${sim.annualCostSavingsUSD.toLocaleString()}/yr** with an estimated payback of **${sim.paybackPeriodYears} years**.`,
+      summaryText: `Scenario simulation for selected retrofits (**${selectedIds.join(', ')}**): Cuts cooling energy by **${sim.energySavedPct}%** (${formatInteger(sim.energySavedkWh)} kWh/yr), saving **${formatCurrency(sim.annualCostSavingsUSD)}/yr** with an estimated payback of **${sim.paybackPeriodYears} years**.`,
       dataCard: {
         type: 'SIMULATION_RESULT',
         title: 'Multi-Retrofit Scenario Simulation',
         metrics: {
           'Combined Energy Cut': `-${sim.energySavedPct}%`,
-          'Annual Cost Savings': `$${sim.annualCostSavingsUSD.toLocaleString()}/yr`,
-          'Estimated Investment': `$${sim.capitalExpenditureUSD.toLocaleString()}`,
+          'Annual Cost Savings': `${formatCurrency(sim.annualCostSavingsUSD)}/yr`,
+          'Estimated Investment': formatCurrency(sim.capitalExpenditureUSD),
           'Scenario Payback': `${sim.paybackPeriodYears} years`,
         },
       },

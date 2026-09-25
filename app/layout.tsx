@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { SmoothScrollProvider } from '@/components/providers/smooth-scroll-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { BuildingScenarioProvider } from '@/components/scenarios/building-scenario-provider';
 
 export const metadata: Metadata = {
   title: 'HeatRetrofit AI — Heat-Aware Building Retrofit & Energy Optimization',
@@ -29,11 +30,13 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className="bg-[var(--background)] text-[var(--text-primary)] antialiased min-h-screen flex flex-col transition-colors duration-300">
         <ThemeProvider>
-          <SmoothScrollProvider>
-            <Navbar />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </SmoothScrollProvider>
+          <BuildingScenarioProvider>
+            <SmoothScrollProvider>
+              <Navbar />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </SmoothScrollProvider>
+          </BuildingScenarioProvider>
         </ThemeProvider>
       </body>
     </html>

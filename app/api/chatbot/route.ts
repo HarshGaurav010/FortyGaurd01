@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { copilotEngine } from '@/lib/ai/copilot-engine';
 import { DEFAULT_BUILDING_PROFILE } from '@/lib/models/building-thermal-model';
+import {
+  getBuildingScenarioById,
+  getDefaultBuildingScenario,
+} from '@/lib/demo/building-scenarios';
+import {
+  scenarioToBuildingProfile,
+  getBaselineHeatMapForScenario,
+} from '@/lib/demo/building-scenario-adapter';
 import { checkRateLimit } from '@/lib/ai/rate-limiter';
 import { ChatQuerySchema } from '@/lib/validation/schemas';
 
@@ -32,7 +40,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const validated = ChatQuerySchema.parse(body);
 
-    const reply = await copilotEngine.generateResponse(validated.query, DEFAULT_BUILDING_PROFILE);
+    const targetScenarioId = validated.scenarioId || validated.buildingId;
+    const scenario = targetScenarioId
+      ? getBuildingScenarioById(targetScenarioId) || getDefaultBuildingScenario()
+      : getDefaultBuildingScenario();
+
+    const buildingProfile = scenarioToBuildingProfile(scenario);
+    const heatMapData = getBaselineHeatMapForScenario(scenario);
+
+    const reply = await copilotEngine.generateResponse(validated.query, buildingProfile, heatMapData);
 
     return NextResponse.json({
       success: true,
