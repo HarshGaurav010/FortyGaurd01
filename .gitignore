@@ -3,10 +3,11 @@
 /.pnpm
 /.yarn
 
-# Next.js build output
+# Next.js build output & generated artifacts
 /.next/
 /out/
 /build
+*.pdf
 
 # Production & environment secrets
 .env

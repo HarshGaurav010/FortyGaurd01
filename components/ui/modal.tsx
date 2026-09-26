@@ -30,11 +30,11 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
       <div className="relative w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
         <GlassCard variant="glow" className="max-h-[90vh] flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
-            <h3 className="text-xl font-bold text-white tracking-wide">{title}</h3>
+          <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-200 dark:border-slate-800">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-wide">{title}</h3>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

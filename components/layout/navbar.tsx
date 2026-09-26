@@ -100,7 +100,7 @@ export function Navbar() {
 
           {/* ── Center — Navigation (desktop) ───────────────────── */}
           <nav
-            className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-0.5 xl:gap-1 px-1"
+            className="hidden xl:flex flex-1 min-w-0 items-center justify-center gap-0.5 2xl:gap-1 px-1"
             aria-label="Primary navigation"
           >
             {NAV_LINKS.map((link) => (
@@ -108,7 +108,7 @@ export function Navbar() {
                 key={link.id}
                 href={link.href}
                 className={`
-                  px-1.5 xl:px-2 py-1.5 rounded-xl text-[11px] xl:text-xs font-medium whitespace-nowrap
+                  px-1.5 2xl:px-2 py-1.5 rounded-xl text-[11px] 2xl:text-xs font-medium whitespace-nowrap
                   transition-all duration-150
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500
                   ${isActive(link.href)
@@ -139,7 +139,7 @@ export function Navbar() {
             {/* CTA */}
             <Link
               href="/analysis"
-              className="hidden sm:inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-full bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold whitespace-nowrap shrink-0 shadow-sm hover:shadow-glow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 min-w-[140px]"
+              className="hidden sm:inline-flex items-center justify-center gap-2 px-3 py-1.5 2xl:px-3.5 2xl:py-2 rounded-full bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold whitespace-nowrap shrink-0 shadow-sm hover:shadow-glow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 min-w-[125px] 2xl:min-w-[140px]"
             >
               <span className="whitespace-nowrap">Analyze Building</span>
               <ArrowRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
@@ -148,7 +148,7 @@ export function Navbar() {
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 rounded-xl border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/06 transition-all duration-200"
+              className="xl:hidden p-2 rounded-xl border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/06 transition-all duration-200"
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav"
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -163,7 +163,7 @@ export function Navbar() {
       {mobileOpen && (
         <div
           id="mobile-nav"
-          className="fixed inset-0 z-40 lg:hidden"
+          className="fixed inset-0 z-40 xl:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"

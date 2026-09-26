@@ -96,8 +96,8 @@ export default function HomePage() {
                   </button>
                 </Link>
                 <Link href="/digital-twin">
-                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white dark:bg-[#0c1426] border border-gray-200 dark:border-white/12 text-gray-800 dark:text-white font-semibold text-sm hover:border-brand-300 dark:hover:border-brand-500/50 hover:shadow-sm transition-all duration-200">
-                    <Box className="w-4 h-4 text-brand-500" />
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white dark:bg-[#0c1426] border border-gray-300 dark:border-white/20 text-gray-900 dark:text-white font-semibold text-sm shadow-sm hover:bg-orange-50/40 dark:hover:bg-[#14203a] hover:border-brand-400 dark:hover:border-brand-500/60 hover:text-brand-950 dark:hover:text-white hover:shadow transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950">
+                    <Box className="w-4 h-4 text-brand-500 shrink-0" aria-hidden="true" />
                     Explore 3D Digital Twin
                   </button>
                 </Link>

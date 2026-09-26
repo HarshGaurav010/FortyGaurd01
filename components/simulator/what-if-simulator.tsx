@@ -20,12 +20,12 @@ interface RetrofitChoice {
 }
 
 const RETROFIT_CHOICES: RetrofitChoice[] = [
-  { id: 'EXTERNAL_SHADING', name: 'External Solar Louvers & Shading', category: 'Facade Shading', icon: <SunMedium className="w-4 h-4 text-amber-400" /> },
-  { id: 'ROOF_INSULATION', name: 'Roof Insulation (R-20+)', category: 'Envelope Insulation', icon: <Layers className="w-4 h-4 text-indigo-400" /> },
-  { id: 'COOL_ROOF', name: 'High-Albedo Cool Roof (SRI 108)', category: 'Reflective Surface', icon: <ShieldCheck className="w-4 h-4 text-cyan-400" /> },
-  { id: 'SOLAR_GLAZING', name: 'Solar-Control Glazing Film', category: 'Fenestration', icon: <SunMedium className="w-4 h-4 text-cyan-400" /> },
-  { id: 'HVAC_UPGRADE', name: 'Smart AI HVAC & Chiller VFDs', category: 'Mechanical Systems', icon: <Cpu className="w-4 h-4 text-emerald-400" /> },
-  { id: 'VEGETATION', name: 'Biosolar Green Roof Canopy', category: 'Green Infrastructure', icon: <Sprout className="w-4 h-4 text-emerald-400" /> },
+  { id: 'EXTERNAL_SHADING', name: 'External Solar Louvers & Shading', category: 'Facade Shading', icon: <SunMedium className="w-4 h-4 text-amber-500 dark:text-amber-400" /> },
+  { id: 'ROOF_INSULATION', name: 'Roof Insulation (R-20+)', category: 'Envelope Insulation', icon: <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> },
+  { id: 'COOL_ROOF', name: 'High-Albedo Cool Roof (SRI 108)', category: 'Reflective Surface', icon: <ShieldCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> },
+  { id: 'SOLAR_GLAZING', name: 'Solar-Control Glazing Film', category: 'Fenestration', icon: <SunMedium className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> },
+  { id: 'HVAC_UPGRADE', name: 'Smart AI HVAC & Chiller VFDs', category: 'Mechanical Systems', icon: <Cpu className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
+  { id: 'VEGETATION', name: 'Biosolar Green Roof Canopy', category: 'Green Infrastructure', icon: <Sprout className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
 ];
 
 export const WhatIfSimulator: React.FC = () => {
