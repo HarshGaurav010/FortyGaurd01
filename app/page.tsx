@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { GlassCard } from '@/components/ui/glass-card';
@@ -9,7 +9,7 @@ import { ProjectFramework } from '@/components/home/project-framework';
 import { CTASection } from '@/components/home/cta-section';
 import { ScrollReveal } from '@/components/providers/scroll-reveal';
 import { OverviewDigitalTwinPreview } from '@/components/digital-twin/overview-digital-twin-preview';
-import { CATALOG_RETROFITS } from '@/lib/calculations/thermal-stress-calculator';
+import { retrofitRecommendationEngine } from '@/lib/retrofit/recommendation';
 import {
   useBuildingScenario,
   useBuildingThermalModel,
@@ -39,7 +39,11 @@ export default function HomePage() {
   const activeThermalReport = scenarioThermalReport || modelReport;
   const baselineHeatMap = getBaselineHeatMapForScenario(activeScenario);
 
-  const top3 = CATALOG_RETROFITS.slice(0, 3);
+  const top3 = useMemo(() => {
+    return retrofitRecommendationEngine
+      .generateRecommendations(activeBuilding, activeThermalReport, baselineHeatMap)
+      .slice(0, 3);
+  }, [activeBuilding, activeThermalReport, baselineHeatMap]);
 
   return (
     <div className="space-y-0">
@@ -231,7 +235,7 @@ export default function HomePage() {
                 },
                 {
                   icon: <TrendingDown className="w-4 h-4 text-amber-500" />,
-                  label: 'Cooling Load Waste',
+                  label: 'Glazing Ratio (WWR)',
                   value: `${Math.round(activeScenario.windowToWallRatio * 100)}% WWR`,
                   sub: `${activeScenario.roofType.replace(/_/g, ' ')} · R-${activeScenario.roofRValue}`,
                   bg: 'bg-amber-50 dark:bg-amber-500/08 border-amber-200/80 dark:border-amber-500/25',
@@ -370,7 +374,7 @@ export default function HomePage() {
                   Rank-Ordered Interventions
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-                  Sorted by payback period — modeled estimates based on FortyGuard LST + building specs
+                  Prioritized by thermal vulnerability impact, energy savings & ROI — modeled estimates
                 </p>
               </div>
               <Link href="/retrofits">
@@ -382,25 +386,25 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {top3.map((r) => (
-                <GlassCard key={r.id} variant="interactive" className="p-5 space-y-4">
+                <GlassCard key={r.retrofit.id} variant="interactive" className="p-5 space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-brand-500 text-white text-xs font-black flex items-center justify-center shrink-0">
-                      {r.recommendedRank}
+                      {r.priorityRank}
                     </span>
                     <div>
-                      <p className="text-xs font-bold text-gray-900 dark:text-white leading-snug">{r.name}</p>
-                      <p className="text-[10px] text-gray-500 font-mono">{r.category}</p>
+                      <p className="text-xs font-bold text-gray-900 dark:text-white leading-snug">{r.retrofit.name}</p>
+                      <p className="text-[10px] text-gray-500 font-mono">{r.retrofit.category}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-center">
                     {[
-                      { label: 'Energy Save', value: `${r.expectedCoolingEnergyReductionPct}%`, color: 'text-emerald-600 dark:text-emerald-400' },
-                      { label: 'Payback', value: `${r.paybackPeriodYears} yrs`, color: 'text-gray-900 dark:text-white' },
-                      { label: 'Est. CapEx', value: `$${Math.round(r.estTotalCostUSD / 1000)}k`, color: 'text-gray-900 dark:text-white' },
+                      { label: 'Energy Save', value: r.estimatedEnergyImpact.formattedRange, color: 'text-emerald-600 dark:text-emerald-400' },
+                      { label: 'Payback', value: r.estimatedPaybackYears.formattedRange, color: 'text-gray-900 dark:text-white' },
+                      { label: 'Est. CapEx', value: `$${Math.round(r.estimatedCostUSD.min / 1000)}k–$${Math.round(r.estimatedCostUSD.max / 1000)}k`, color: 'text-gray-900 dark:text-white' },
                     ].map(({ label, value, color }) => (
                       <div key={label} className="p-2 rounded-xl bg-gray-50 dark:bg-[#0c1426] border border-gray-200/80 dark:border-white/10">
-                        <p className={`text-sm font-black font-mono ${color}`}>{value}</p>
+                        <p className={`text-xs font-black font-mono ${color}`}>{value}</p>
                         <p className="text-[9px] text-gray-400 dark:text-slate-500 font-sans mt-0.5">{label}</p>
                       </div>
                     ))}
@@ -409,7 +413,7 @@ export default function HomePage() {
                   <div className="pt-2 border-t border-gray-100 dark:border-white/08 flex items-center justify-between text-xs">
                     <span className="text-gray-500 font-mono">Annual Savings (est.)</span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                      +${(r.expectedAnnualSavingsUSD / 1000).toFixed(1)}k/yr
+                      {r.estimatedAnnualSavingsUSD.formattedRange}
                     </span>
                   </div>
                 </GlassCard>

@@ -17,6 +17,16 @@ export interface AuditPDFInput {
       overall20YrROIPct: number;
       totalCarbonOffsetTons20Yr: number;
     };
+    packageInterventions?: Array<{
+      id: string;
+      name: string;
+      category: string;
+      expectedCoolingEnergyReductionPct: number;
+      estTotalCostUSD: number;
+      expectedAnnualSavingsUSD: number;
+      paybackPeriodYears: number;
+      carbonOffsetTonsPerYear: number;
+    }>;
     interventions: Array<{
       id: string;
       name: string;
@@ -283,8 +293,8 @@ export function createAuditPDFDoc({
   doc.text('ANNUAL SAVINGS', colX.savings, tableY + 4.5);
   doc.text('PAYBACK', colX.payback, tableY + 4.5, { align: 'right' });
 
-  // Table rows
-  const topInterventions = roiData.interventions.slice(0, 4);
+  // Table rows (Top-3 package interventions)
+  const topInterventions = roiData.packageInterventions || roiData.interventions.slice(0, 3);
   let currentRowY = tableY + tableHeaderHeight;
 
   topInterventions.forEach((item, index) => {
@@ -321,6 +331,33 @@ export function createAuditPDFDoc({
 
     currentRowY += rowHeight;
   });
+
+  // Combined Package Total row
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, currentRowY, contentWidth, rowHeight, 'F');
+  doc.setDrawColor(203, 213, 225);
+  doc.line(margin, currentRowY, margin + contentWidth, currentRowY);
+  doc.line(margin, currentRowY + rowHeight, margin + contentWidth, currentRowY + rowHeight);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Combined Package Total', colX.strategy, currentRowY + 5);
+
+  doc.setTextColor(5, 150, 105); // emerald-600
+  doc.text(`-${roiData.combinedPackage.combinedEnergyReductionPct}%`, colX.reduction, currentRowY + 5);
+
+  doc.setTextColor(15, 23, 42);
+  doc.setFont('helvetica', 'bold');
+  doc.text(formatCurrency(roiData.combinedPackage.totalCostUSD), colX.capex, currentRowY + 5);
+
+  doc.setTextColor(217, 119, 6); // amber-600
+  doc.text(`${formatCurrency(roiData.combinedPackage.annualSavingsUSD)}/yr`, colX.savings, currentRowY + 5);
+
+  doc.setTextColor(14, 116, 144); // cyan-700
+  doc.text(`${roiData.combinedPackage.overallPaybackYears} Yrs`, colX.payback, currentRowY + 5, { align: 'right' });
+
+  currentRowY += rowHeight;
 
   // ── SECTION 4: AUDIT METHODOLOGY & COMPLIANCE BOX ──────────────
   y = currentRowY + 6;

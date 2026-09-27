@@ -89,7 +89,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ isOpen, onClos
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white font-mono">HeatRetrofit AI Copilot</h3>
-              <Badge variant="cyan" pulse className="text-[9px]">LIVE ENGINE</Badge>
+              <Badge variant="cyan" pulse className="text-[9px]">AI ENGINE</Badge>
             </div>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">Connected to FortyGuard & Calculation Services</p>
           </div>

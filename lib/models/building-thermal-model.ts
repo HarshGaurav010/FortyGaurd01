@@ -32,13 +32,18 @@ export function computeThermalStressReport(
   const annualWasteCost = Math.round((facadeGain + roofGain) * 260 * 0.14); // $0.14/kWh average rate
   const carbonTons = Number(((building.baselineAnnualEnergykWh * 0.48) / 1000).toFixed(1));
 
+  const normalizedSolarExposure = (solarFactor - 1) / (2 - 1);
+  const solarExposureRating = Number(
+    (5 + normalizedSolarExposure * 5).toFixed(1)
+  );
+
   return {
     buildingId: building.id,
     thermalStressScore: rawScore,
     stressCategory: category,
     facadeHeatGainKW: facadeGain,
     roofHeatGainKW: roofGain,
-    solarExposureRating: Number((7.2 * solarFactor).toFixed(1)),
+    solarExposureRating,
     urbanHeatIslandImpactDeltaC: Number((heatMap.peakLSTC - heatMap.averageLSTC).toFixed(1)),
     annualCoolingWasteCostUSD: annualWasteCost,
     carbonFootprintTonsCO2: carbonTons,

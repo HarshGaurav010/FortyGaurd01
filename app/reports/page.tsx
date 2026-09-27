@@ -30,8 +30,9 @@ export default function ReportsPage() {
     return {
       buildingId: buildingProfile.id,
       interventions: retrofits,
+      packageInterventions: top3,
       combinedPackage: {
-        packageName: 'Optimal Energy Efficiency Package (Cool Roof + Window Film + Smart HVAC)',
+        packageName: 'High-Impact Thermal Retrofit Package',
         totalCostUSD: totalCost,
         annualSavingsUSD: annualSavings,
         combinedEnergyReductionPct: Number(combinedEnergyReduction.toFixed(1)),
@@ -223,7 +224,12 @@ export default function ReportsPage() {
 
             {/* Executive Summary Table */}
             <GlassCard variant="glow" className="p-6 print-avoid-break">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Recommended Intervention Package Schedule</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recommended Intervention Package Schedule</h3>
+                <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
+                  {roiData.combinedPackage.packageName} (Top 3 Measures)
+                </span>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono">
                   <thead>
@@ -236,7 +242,7 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-slate-700 dark:text-slate-200">
-                    {roiData.interventions.slice(0, 4).map((item) => (
+                    {roiData.packageInterventions.map((item) => (
                       <tr key={item.id}>
                         <td className="py-3 px-3 font-sans font-bold text-slate-900 dark:text-white">{item.name}</td>
                         <td className="py-3 px-3 text-emerald-600 dark:text-emerald-400 font-bold">-{item.expectedCoolingEnergyReductionPct}%</td>
@@ -246,6 +252,25 @@ export default function ReportsPage() {
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-slate-300 dark:border-slate-700 bg-slate-100/70 dark:bg-slate-900/70 font-bold text-slate-900 dark:text-white">
+                      <td className="py-3 px-3 font-sans">
+                        Combined Package Total
+                      </td>
+                      <td className="py-3 px-3 text-emerald-600 dark:text-emerald-400">
+                        -{roiData.combinedPackage.combinedEnergyReductionPct}%
+                      </td>
+                      <td className="py-3 px-3">
+                        {formatCurrency(roiData.combinedPackage.totalCostUSD)}
+                      </td>
+                      <td className="py-3 px-3 text-amber-600 dark:text-amber-400">
+                        {formatCurrency(roiData.combinedPackage.annualSavingsUSD)}/yr
+                      </td>
+                      <td className="py-3 px-3 text-cyan-700 dark:text-cyan-300">
+                        {roiData.combinedPackage.overallPaybackYears} Yrs
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </GlassCard>

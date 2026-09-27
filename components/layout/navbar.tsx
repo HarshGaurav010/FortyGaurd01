@@ -127,10 +127,10 @@ export function Navbar() {
             {/* Scenario Selector */}
             <BuildingScenarioSelector className="hidden sm:inline-flex" />
 
-            {/* FG-LIVE status */}
+            {/* FG-DATA status */}
             <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold tracking-wider font-mono shrink-0 whitespace-nowrap">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-dot shrink-0" />
-              FG-LIVE
+              FG-DATA
             </span>
 
             {/* Theme toggle */}
@@ -198,10 +198,10 @@ export function Navbar() {
             </nav>
 
             <div className="px-3 pb-3 pt-0 flex flex-col gap-2 border-t border-gray-100 dark:border-white/06 mt-1 pt-3">
-              {/* FG-LIVE */}
+              {/* FG-DATA */}
               <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold tracking-wider font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-dot" />
-                FORTYGUARD LIVE
+                FORTYGUARD DATA
               </div>
               <Link
                 href="/analysis"

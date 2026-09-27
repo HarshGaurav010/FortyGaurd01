@@ -27,8 +27,9 @@ export async function GET(req: NextRequest) {
       buildingId: building.id,
       buildingName: building.name,
       interventions: retrofits,
+      packageInterventions: top3,
       combinedPackage: {
-        packageName: 'Optimal Energy Efficiency Package (Cool Roof + Window Film + Smart HVAC)',
+        packageName: 'High-Impact Thermal Retrofit Package',
         totalCostUSD: totalCost,
         annualSavingsUSD: annualSavings,
         combinedEnergyReductionPct: Number(combinedEnergyReduction.toFixed(1)),

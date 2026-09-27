@@ -313,7 +313,7 @@ export default function AnalysisPage() {
                 accentColor="amber"
               />
               <MetricCard
-                title="Facade Solar Exposure"
+                title="Facade Solar Exposure Rating"
                 value={`${activeThermalReport.solarExposureRating} / 10`}
                 subtext={`${activeThermalReport.facadeHeatGainKW} kW Facade Gain [modeled]`}
                 icon={<Zap className="w-5 h-5" />}

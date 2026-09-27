@@ -11,7 +11,7 @@ const FEATURES = [
     iconBg: 'bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400',
     badge: { label: 'FortyGuard API', variant: 'rose' as const },
     title: 'Hyperlocal Thermal Diagnostics',
-    description: 'Ingest real-time FortyGuard Land Surface Temperature and solar irradiance telemetry at 100m resolution to identify roof and facade heat stress hotspots.',
+    description: 'Ingest FortyGuard Land Surface Temperature and solar irradiance data at 100m resolution to identify roof and facade heat stress hotspots.',
   },
   {
     icon: <ShieldCheck className="w-5 h-5" />,

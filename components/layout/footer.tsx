@@ -35,7 +35,6 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-widest mb-4">Platform</h4>
             <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
               <li><Link href="/analysis" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Building Thermal Analysis</Link></li>
-              <li><Link href="/dashboard" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">FortyGuard Heat Dashboard</Link></li>
               <li><Link href="/retrofits" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Retrofit Interventions</Link></li>
               <li><Link href="/simulator" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">What-If Energy Simulator</Link></li>
               <li><Link href="/reports" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Audit & ROI Reports</Link></li>
@@ -60,7 +59,7 @@ export const Footer: React.FC = () => {
               <li><a href="https://fortyguard.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-cyan-600 dark:hover:text-cyan-400">FortyGuard Heat Platform <ExternalLink className="w-3 h-3" /></a></li>
               <li><a href="#framework" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Project Architecture Flow</a></li>
               <li><Link href="/ai-copilot" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">AI Thermal Copilot</Link></li>
-              <li><a href="#retrofits" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Intervention Guidelines</a></li>
+              <li><Link href="/retrofits" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Intervention Guidelines</Link></li>
             </ul>
           </div>
         </div>
@@ -70,9 +69,9 @@ export const Footer: React.FC = () => {
             © {new Date().getFullYear()} HeatRetrofit AI. Built with FortyGuard Hyperlocal Heat Intelligence.
           </div>
           <div className="flex items-center gap-6">
-            <span className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Privacy Policy</span>
-            <span className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Terms of Service</span>
-            <span className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">API Documentation</span>
+            <span className="text-slate-500 select-none">Privacy Policy</span>
+            <span className="text-slate-500 select-none">Terms of Service</span>
+            <span className="text-slate-500 select-none">API Documentation</span>
           </div>
         </div>
       </div>
