@@ -123,9 +123,9 @@ export class RetrofitRecommendationEngine {
           formattedRange: `$${formatNumber(minCost)} – $${formatNumber(maxCost)}`,
         },
         estimatedAnnualSavingsUSD: {
-          min: roiMax.annualMonetarySavingsUSD,
-          max: roiMin.annualMonetarySavingsUSD,
-          formattedRange: `$${formatNumber(roiMax.annualMonetarySavingsUSD)} – $${formatNumber(roiMin.annualMonetarySavingsUSD)}/yr`,
+          min: roiMin.annualMonetarySavingsUSD,
+          max: roiMax.annualMonetarySavingsUSD,
+          formattedRange: `$${formatNumber(roiMin.annualMonetarySavingsUSD)} – $${formatNumber(roiMax.annualMonetarySavingsUSD)}/yr`,
         },
         estimatedPaybackYears: {
           min: roiMin.simplePaybackYears,

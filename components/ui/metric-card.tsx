@@ -89,14 +89,15 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <span
             className={clsx(
               'inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full',
-              isPositive
+              isPositive === true
                 ? 'bg-emerald-50 dark:bg-emerald-500/12 text-emerald-700 dark:text-emerald-400'
-                : 'bg-rose-50    dark:bg-rose-500/12    text-rose-700    dark:text-rose-400',
+                : isPositive === false
+                ? 'bg-rose-50    dark:bg-rose-500/12    text-rose-700    dark:text-rose-400'
+                : 'bg-gray-100   dark:bg-white/08       text-gray-700    dark:text-gray-300',
             )}
           >
-            {isPositive
-              ? <TrendingUp  className="w-3 h-3" aria-hidden />
-              : <TrendingDown className="w-3 h-3" aria-hidden />}
+            {isPositive === true && <TrendingUp className="w-3 h-3" aria-hidden />}
+            {isPositive === false && <TrendingDown className="w-3 h-3" aria-hidden />}
             {change}
           </span>
         )}

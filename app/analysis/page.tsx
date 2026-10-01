@@ -17,6 +17,27 @@ import {
   useBuildingScenario,
   useBuildingThermalModel,
 } from '@/components/scenarios/building-scenario-provider';
+import { BuildingThermalStressReport } from '@/types/building';
+
+const THERMAL_STRESS_BADGE_MAP: Record<
+  BuildingThermalStressReport['stressCategory'],
+  { change: string; isPositive?: boolean }
+> = {
+  OPTIMAL: { change: 'LOW STRESS', isPositive: true },
+  MODERATE: { change: 'MODERATE', isPositive: undefined },
+  HIGH: { change: 'VULNERABILITY', isPositive: false },
+  EXTREME: { change: 'VULNERABILITY', isPositive: false },
+  CRITICAL: { change: 'VULNERABILITY', isPositive: false },
+};
+
+export function getThermalStressBadge(
+  stressCategory?: BuildingThermalStressReport['stressCategory'] | string
+): { change: string; isPositive?: boolean } {
+  if (stressCategory && stressCategory in THERMAL_STRESS_BADGE_MAP) {
+    return THERMAL_STRESS_BADGE_MAP[stressCategory as BuildingThermalStressReport['stressCategory']];
+  }
+  return { change: 'VULNERABILITY', isPositive: false };
+}
 
 export default function AnalysisPage() {
   const { selectedScenario, buildingProfile, thermalReport } = useBuildingScenario();
@@ -26,6 +47,7 @@ export default function AnalysisPage() {
   const activeScenario = selectedScenario || modelScenario;
   const activeBuilding = buildingProfile || modelBuilding;
   const activeThermalReport = thermalReport || modelReport;
+  const stressBadge = getThermalStressBadge(activeThermalReport.stressCategory);
 
   const [addressInput, setAddressInput] = useState(
     () => `${activeScenario.name}, ${activeScenario.location.city}, ${activeScenario.location.state}`
@@ -146,7 +168,7 @@ export default function AnalysisPage() {
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Building Thermal Stress Assessment</h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
-            Analyze Land Surface Temperature (LST) and microclimate heat stress using official FortyGuard telemetry (US supported regions).
+            Analyze Land Surface Temperature (LST) and microclimate heat stress using FortyGuard heat intelligence data and modeled building scenarios (US supported regions).
           </p>
 
           {/* Form Controls */}
@@ -300,8 +322,8 @@ export default function AnalysisPage() {
                 title="Thermal Stress Score"
                 value={`${activeThermalReport.thermalStressScore}/100`}
                 subtext={`${activeThermalReport.stressCategory} [modeled]`}
-                change="VULNERABILITY"
-                isPositive={false}
+                change={stressBadge.change}
+                isPositive={stressBadge.isPositive}
                 icon={<Flame className="w-5 h-5" />}
                 accentColor="rose"
               />
@@ -315,7 +337,7 @@ export default function AnalysisPage() {
               <MetricCard
                 title="Facade Solar Exposure Rating"
                 value={`${activeThermalReport.solarExposureRating} / 10`}
-                subtext={`${activeThermalReport.facadeHeatGainKW} kW Facade Gain [modeled]`}
+                subtext={`${activeThermalReport.facadeHeatGainKW} kW Modeled Facade Heat Ingress [modeled]`}
                 icon={<Zap className="w-5 h-5" />}
                 accentColor="cyan"
               />
@@ -342,10 +364,10 @@ export default function AnalysisPage() {
                   </Badge>
                 </div>
 
-                {/* Additional Modeled Metrics: Facade Heat Gain & Roof Heat Gain */}
+                {/* Additional Modeled Metrics: Modeled Facade Heat Ingress & Roof Heat Gain */}
                 <div className="grid grid-cols-2 gap-3 font-mono">
-                  <div className="p-3 rounded-2xl bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans">Facade Heat Gain</span>
+                  <div className="p-3 rounded-2xl bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-800" title="Modeled envelope heat-ingress proxy">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-sans" title="Modeled envelope heat-ingress proxy">Modeled Facade Heat Ingress</span>
                     <span className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono">
                       {activeThermalReport.facadeHeatGainKW} kW
                     </span>
